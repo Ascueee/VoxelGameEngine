@@ -1,0 +1,27 @@
+# Build output
+/build/
+/out/
+/cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# IDE / editor
+.vs/
+.vscode/
+*.xcodeproj/
+.idea/
+
+# Compiled binaries
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+*.pdb
+
+# OS cruft
+.DS_Store
+Thumbs.db

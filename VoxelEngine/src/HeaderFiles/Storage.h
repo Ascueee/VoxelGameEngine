@@ -1,0 +1,20 @@
+    #pragma once
+    #include <unordered_map>
+    #include "Entity.h"
+    #include "Component.h"
+    struct EntityHash {
+        std::size_t operator()(const Entity& ent) const {
+            return std::hash<int>{}(ent.GetID());
+        }
+    };
+
+    struct Storage {
+        std::unordered_map<int, Entity> entityStorage;
+        std::unordered_map<int, TestComponent> testStorage;
+        std::unordered_map<int, OpenGLComponent> openGLStorage;
+        std::unordered_map<int, MeshComponent> meshStorage;
+        std::unordered_map<int, ColorComponent> colorStorage;
+        std::unordered_map<int, TransformComponent> transformStorage;
+        std::unordered_map<int, RigComponent> rigStorage;
+        std::unordered_map<int, AnimatorComponent> animatorStorage;
+    };
