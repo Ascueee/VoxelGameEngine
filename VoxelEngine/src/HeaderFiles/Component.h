@@ -10,6 +10,13 @@ struct TestComponent {
     std::string msg = "Hello";
 };
 
+struct TransformComponent{
+    glm::vec3 position = glm::vec3(0.0f);
+    glm::vec3 rotation = glm::vec3(0.0f);
+    glm::vec3 scale = glm::vec3(1.0f);
+    glm::mat4 model = glm::mat4(1.0f);
+};
+
 struct OpenGLComponent {
     GLuint vao = 0;
     GLuint vbo = 0;
@@ -23,16 +30,8 @@ struct MeshComponent {
     int rigRef = 0;
 };
 
-
 struct ColorComponent{
     glm::vec3 color = glm::vec3(1.0f);
-};
-
-struct TransformComponent{
-    glm::vec3 position = glm::vec3(0.0f);
-    glm::vec3 rotation = glm::vec3(0.0f);
-    glm::vec3 scale = glm::vec3(1.0f);
-    glm::mat4 model = glm::mat4(1.0f);
 };
 
 struct RigComponent{
@@ -43,4 +42,10 @@ struct RigComponent{
 struct AnimatorComponent{
     float currentTime = 0.0f;
 };
+
+struct AABB{
+    glm::vec3 center;
+    glm::vec3 halfExtents;
+};
+
 

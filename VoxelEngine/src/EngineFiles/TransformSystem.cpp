@@ -1,19 +1,13 @@
 #include "TransformSystem.h"
 
-TransformSystem::TransformSystem(Storage* storage) : System(storage){}
-
-void TransformSystem::Run(){
-    for (auto& [id, entity] : storage->entityStorage) {        
-        if (entity.GetParentID() == -1)
-        {
-            UpdateTransform(entity);
-        }
-    }
+Storage* TransformSystem::storage;
+void TransformSystem::Init(Storage* engineStorage){
+    storage = engineStorage;
 }
 
-//Used to update the entities model matrix
-void TransformSystem::UpdateTransform(Entity ent){
-    TransformComponent& entityTransform = storage->transformStorage[ent.GetID()];
+
+void TransformSystem::Update(Entity* ent){
+    TransformComponent& entityTransform = storage->transformStorage[ent->GetID()];
     entityTransform.model = glm::mat4(1.0f);
 
     entityTransform.model = glm::translate(entityTransform.model, entityTransform.position);
@@ -22,12 +16,12 @@ void TransformSystem::UpdateTransform(Entity ent){
     entityTransform.model = glm::rotate(entityTransform.model, entityTransform.rotation.z, glm::vec3(0,0,1));
     entityTransform.model = glm::scale(entityTransform.model, entityTransform.scale);
 
-    if(ent.GetParentID() != -1){
-        TransformComponent& parentTransform = storage->transformStorage[ent.GetParentID()];
+    if(ent->GetParentID() != -1){
+        TransformComponent& parentTransform = storage->transformStorage[ent->GetParentID()];
         entityTransform.model = parentTransform.model * entityTransform.model;
     }
 
-    for(int i = 0; i < ent.GetChildren().size(); i++){
-        UpdateTransform(storage->entityStorage[ent.GetChildren()[i]]);
+    for(int i = 0; i < ent->GetChildren().size(); i++){
+        Update(&storage->entityStorage[ent->GetChildren()[i]]);
     }
 }

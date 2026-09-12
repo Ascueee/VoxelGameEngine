@@ -7,13 +7,14 @@
 #include "Entity.h"
 #include "Storage.h"
 
-class Renderer{
+class RenderSystem{
     public:
-        Renderer();
+        RenderSystem();
         static void Init(Storage* storage, Shader* shader);
         static void Load(Entity* ent);
         static void Draw(Entity* ent);
-        static Storage* storage;
+        
     private:
+        static Storage* storage;
         static Shader* shader;
 };

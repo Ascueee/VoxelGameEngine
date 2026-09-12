@@ -1,13 +1,10 @@
 #pragma once
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include "System.h"
-
-class TransformSystem : public System{
+#include "Storage.h"
+class TransformSystem{
     public:
-        TransformSystem(Storage* storage);
-        void Run() override;
-        void UpdateTransform(Entity ent);
+        TransformSystem();
+        static void Init(Storage* storage);
+        static void Update(Entity* ent);
     private:
+        static Storage* storage;
 };

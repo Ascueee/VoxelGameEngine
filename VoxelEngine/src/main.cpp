@@ -5,17 +5,17 @@
 #include "StorageManager.h"
 #include "EngineModelLoader.h"
 #include "System.h"
-#include "TransformSystem.h"
 #include "Animator.h"
-#include "Renderer.h"
+#include "RenderSystem.h"
+#include "TransformSystem.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window, float deltaTime);
 
 const unsigned int SCR_WIDTH = 1920;
 const unsigned int SCR_HEIGHT = 1080;
+
 StorageManager manager;
-TransformSystem* transformSystem;
 int main()
 {
     glfwInit();
@@ -44,9 +44,10 @@ int main()
     glEnable(GL_DEPTH_TEST);
     EngineModelLoader::Load();
 
-    transformSystem = new TransformSystem(manager.GetStorage());
+    TransformSystem::Init(manager.GetStorage());
     Animator::storage = manager.GetStorage();
-    Renderer::Init(manager.GetStorage(), new Shader("/Users/hayyan/Desktop/Repos/CPPEngine/VoxelEngine/src/Shaders/base.vert",
+    RenderSystem::Init(manager.GetStorage(), 
+    new Shader("/Users/hayyan/Desktop/Repos/CPPEngine/VoxelEngine/src/Shaders/base.vert",
         "/Users/hayyan/Desktop/Repos/CPPEngine/VoxelEngine/src/Shaders/base.frag"));
 
     manager.CreateBlankEntity();
@@ -64,9 +65,9 @@ int main()
     manager.GetStorage()->transformStorage[4].scale = glm::vec3(0.01f);
     manager.GetStorage()->transformStorage[4].position = glm::vec3(0,1,0);
     
-    Renderer::Load(manager.GetEntityById(1));
-    Renderer::Load(manager.GetEntityById(2));
-    Renderer::Load(manager.GetEntityById(4));
+    RenderSystem::Load(manager.GetEntityById(1));
+    RenderSystem::Load(manager.GetEntityById(2));
+    RenderSystem::Load(manager.GetEntityById(4));
 
     float deltaTime = 0.0f;
     float lastFrame = 0.0f;
@@ -81,12 +82,15 @@ int main()
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        transformSystem->Run();
 
+        TransformSystem::Update(manager.GetEntityById(1));
+        TransformSystem::Update(manager.GetEntityById(2));
+        TransformSystem::Update(manager.GetEntityById(3));
         Animator::RunAnimation(manager.GetEntityById(3), "mixamo.com", deltaTime);
-        Renderer::Draw(manager.GetEntityById(1));
-        Renderer::Draw(manager.GetEntityById(2));
-        Renderer::Draw(manager.GetEntityById(4));
+
+        RenderSystem::Draw(manager.GetEntityById(1));
+        RenderSystem::Draw(manager.GetEntityById(2));
+        RenderSystem::Draw(manager.GetEntityById(4));
 
         glfwSwapBuffers(window);
         glfwPollEvents();

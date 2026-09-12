@@ -1,14 +1,14 @@
-#include "Renderer.h"
+#include "RenderSystem.h"
 
-Storage* Renderer::storage;
-Shader* Renderer::shader;
+Storage* RenderSystem::storage;
+Shader* RenderSystem::shader;
 
-void Renderer::Init(Storage* newStorage, Shader* newShader){
+void RenderSystem::Init(Storage* newStorage, Shader* newShader){
     storage = newStorage;
     shader = newShader;
 }
 
-void Renderer::Load(Entity* ent){
+void RenderSystem::Load(Entity* ent){
     MeshComponent& meshComponent = storage->meshStorage[ent->GetID()];
     OpenGLComponent& openGLComponent = storage->openGLStorage[ent->GetID()]; 
 
@@ -38,7 +38,7 @@ void Renderer::Load(Entity* ent){
     openGLComponent.indexCount = static_cast<GLsizei>(meshComponent.indices.size());
 }
 
-void Renderer::Draw(Entity* ent){
+void RenderSystem::Draw(Entity* ent){
     auto meshIt = storage->meshStorage.find(ent->GetID());
     auto openGLIt = storage->openGLStorage.find(ent->GetID());
     auto colorIt = storage->colorStorage.find(ent->GetID());

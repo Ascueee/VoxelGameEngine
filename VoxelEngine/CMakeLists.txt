@@ -92,13 +92,13 @@ add_executable(HelloWindow
     src/EngineFiles/Entity.cpp
     src/EngineFiles/StorageManager.cpp
     src/EngineFiles/System.cpp
-    src/EngineFiles/TransformSystem.cpp
     src/EngineFiles/Model.cpp
     src/EngineFiles/Rig.cpp
     src/EngineFiles/EngineModelLoader.cpp
     src/EngineFiles/Shader.cpp
     src/EngineFiles/Animator.cpp
-    src/EngineFiles/Renderer.cpp
+    src/EngineFiles/RenderSystem.cpp
+    src/EngineFiles/TransformSystem.cpp
 )
 
 
