@@ -11,6 +11,7 @@ void StorageManager::CreateBlankEntity(){
     entityCounter++;
 }
 
+
 //using a model asset from the EngineModelLoader it builds the model into a entity heirarchy
 void StorageManager::BuildModel(Model* model){
     auto& nodes = model->GetNodes();
@@ -35,26 +36,28 @@ void StorageManager::BuildModel(Model* model){
             storage.openGLStorage.emplace(entityCounter, openGLComponent);
             storage.colorStorage.emplace(entityCounter, colorComponent);
             storage.meshStorage.emplace(entityCounter, nodes[i].modelMesh);
-            std::cout << "Added Rendering componenets";
+            //std::cout << "Added Rendering componenets";
         }
 
         if(nodes[i].parentId == -1){
+            AABBComponent AABBComponent;
             RigComponent rigComponent;
             rigComponent.rig = model->GetRig();
             rigComponent.finalBoneMatrices.assign(rigComponent.rig.boneCounter, glm::mat4(1.0f));
 
             if(rigComponent.rig.GetNumberOfAnimations() > 0){
                 AnimatorComponent animatorComponent;
-                std::cout << "Added Animator to root node ";
+                //std::cout << "Added Animator to root node ";
                 storage.animatorStorage.emplace(entityCounter, animatorComponent);
             }
 
             storage.rigStorage.emplace(entityCounter, rigComponent);
+            storage.AABBStorage.emplace(entityCounter, AABBComponent);
             entityRigHolder = newEntity.GetID();
             std::cout << "Added rig to root node";
         }
 
-        std::cout << "Adding entity to System and Transform" << std::endl;
+        //std::cout << "Adding entity to System and Transform" << std::endl;
         storage.entityStorage.emplace(entityCounter, newEntity);
         storage.transformStorage.emplace(entityCounter, nodes[i].modelTransform);
 
@@ -63,16 +66,18 @@ void StorageManager::BuildModel(Model* model){
             storage.entityStorage.at(parentEntityId).SetChild(entityCounter);
         }
 
-        std::cout << "Position: ("
-          << storage.transformStorage[newEntity.GetID()].position.x << ", "
-          << storage.transformStorage[newEntity.GetID()].position.y << ", "
-          << storage.transformStorage[newEntity.GetID()].position.z << ")"
-          << std::endl;
-        std::cout << "Creating Entity{" << newEntity.GetName() << ", " <<  newEntity.GetID()<< "}" << std::endl;
+        // std::cout << "Position: ("
+        //   << storage.transformStorage[newEntity.GetID()].position.x << ", "
+        //   << storage.transformStorage[newEntity.GetID()].position.y << ", "
+        //   << storage.transformStorage[newEntity.GetID()].position.z << ")"
+        //   << std::endl;
+        //std::cout << "Creating Entity{" << newEntity.GetName() << ", " <<  newEntity.GetID()<< "}" << std::endl;
 
         entityCounter++;
     }
 }
+
+
 
 void StorageManager::CreateCubeEntity(){
     Entity newEntity;

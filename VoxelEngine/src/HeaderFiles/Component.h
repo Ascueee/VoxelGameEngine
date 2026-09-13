@@ -43,9 +43,17 @@ struct AnimatorComponent{
     float currentTime = 0.0f;
 };
 
-struct AABB{
-    glm::vec3 center;
-    glm::vec3 halfExtents;
+struct PhysicsComponent{
+    bool isStatic = false;
 };
 
+struct AABBComponent{
+    glm::vec3 center = glm::vec3(0,0,0);
+    glm::vec3 size = glm::vec3(0,0,0);
+    glm::vec3 halfExtents = glm::vec3(0,0,0);
+    glm::vec3 min = glm::vec3(0,0,0);
+    glm::vec3 max = glm::vec3(0,0,0);
+};
+
+ 
 

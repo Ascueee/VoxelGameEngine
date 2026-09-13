@@ -8,6 +8,7 @@ class StorageManager{
         StorageManager();
         void CreateBlankEntity();
         void CreateCubeEntity();
+        void CreateDebugAABBEntity(Entity* debugEnt, glm::vec3 offSet = glm::vec3(0,0,0));
         void BuildModel(Model* model);
         
         Entity* GetEntityById (int entityID);
