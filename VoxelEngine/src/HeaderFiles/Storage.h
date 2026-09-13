@@ -7,7 +7,7 @@
             return std::hash<int>{}(ent.GetID());
         }
     };
-
+    
     struct Storage {
         std::unordered_map<int, Entity> entityStorage;
         std::unordered_map<int, TestComponent> testStorage;
@@ -17,4 +17,6 @@
         std::unordered_map<int, TransformComponent> transformStorage;
         std::unordered_map<int, RigComponent> rigStorage;
         std::unordered_map<int, AnimatorComponent> animatorStorage;
+        std::unordered_map<int, AABBComponent> AABBStorage;
+        std::unordered_map<int, PhysicsComponent> physicsStorage;
     };
