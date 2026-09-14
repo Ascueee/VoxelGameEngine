@@ -102,6 +102,7 @@ add_executable(HelloWindow
     src/EngineFiles/TransformSystem.cpp
     src/EngineFiles/AABBSystem.cpp
     src/EngineFiles/PhysicsSystem.cpp
+    src/EngineFiles/CameraSystem.cpp
 )
 
 

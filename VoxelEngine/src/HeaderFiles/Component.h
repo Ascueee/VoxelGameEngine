@@ -27,10 +27,6 @@ struct MeshComponent {
     int rigRef = 0;
 };
 
-struct ColorComponent{
-    glm::vec3 color = glm::vec3(1.0f);
-};
-
 struct MaterialComponent{
     glm::vec3 color = glm::vec3(1,1,1);
     Texture* diffuse = nullptr;
@@ -55,6 +51,13 @@ struct AABBComponent{
     glm::vec3 halfExtents = glm::vec3(0,0,0);
     glm::vec3 min = glm::vec3(0,0,0);
     glm::vec3 max = glm::vec3(0,0,0);
+};
+
+struct CameraComponent{
+    glm::mat4 view;
+    glm::mat4 projection;
+    glm::vec3 front = glm::vec3(0,0,1);
+    glm::vec3 up = glm::vec3(0,1,0);
 };
 
  

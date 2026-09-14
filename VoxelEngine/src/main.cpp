@@ -10,6 +10,7 @@
 #include "TransformSystem.h"
 #include "AABBSystem.h"
 #include "PhysicsSystem.h"
+#include "CameraSystem.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
@@ -59,7 +60,6 @@ int main()
 
     StorageManager::CreateBlankEntity();
     StorageManager::CreateCubeEntity();
-    StorageManager::GetStorage()->colorStorage[1].color = glm::vec3(1,1,1);
     StorageManager::GetStorage()->materialStorage[1].diffuse = EngineTextureLoader::GetTexture("Brick");
     StorageManager::GetStorage()->transformStorage[1].scale = glm::vec3(10,1,10);
     PhysicsComponent boxPhys;
@@ -68,24 +68,29 @@ int main()
 
     StorageManager::CreateCubeEntity();
     StorageManager::GetStorage()->materialStorage[2].color = glm::vec3(1,1,0);
-    StorageManager::GetStorage()->materialStorage[2].diffuse = EngineTextureLoader::GetTexture("grass");
+    StorageManager::GetStorage()->materialStorage[2].diffuse = EngineTextureLoader::GetTexture("Grass");
     StorageManager::GetStorage()->transformStorage[2].position = glm::vec3(-2,1,0);
     StorageManager::GetStorage()->transformStorage[2].scale = glm::vec3(1,1,1);
 
     StorageManager::BuildModel(EngineModelLoader::GetModel("Ymca Dance"));
     StorageManager::GetStorage()->transformStorage[3].scale = glm::vec3(0.1f);
-    StorageManager::GetStorage()->transformStorage[3].position = glm::vec3(0,5,0);
+    StorageManager::GetStorage()->transformStorage[3].position = glm::vec3(0,20,0);
     StorageManager::GetStorage()->materialStorage[4].color = glm::vec3(1,1,1);
     StorageManager::GetStorage()->materialStorage[4].diffuse = EngineTextureLoader::GetTexture("Brick");
     PhysicsComponent modelPhys;
-    StorageManager::GetStorage()->physicsStorage.emplace(StorageManager::GetEntityById(3)->GetID(), modelPhys);
 
+    StorageManager::GetStorage()->physicsStorage.emplace(StorageManager::GetEntityById(3)->GetID(), modelPhys);
     AABBSystem::ConstructAABB(StorageManager::GetEntityById(3), glm::vec3(1,1,1));
     AABBSystem::ConstructAABB(StorageManager::GetEntityById(1), glm::vec3(1,0.5,1));
 
+    StorageManager::CreateCameraEntity();
+    StorageManager::GetStorage()->entityStorage[42].SetParentID(3);
+    StorageManager::GetStorage()->entityStorage[3].SetChild(42);
+    RenderSystem::SetRenderCamera(StorageManager::GetEntityById(42));
+
     PhysicsSystem::Add(StorageManager::GetEntityById(3));
     PhysicsSystem::Add(StorageManager::GetEntityById(1));
-    
+
     RenderSystem::Load(StorageManager::GetEntityById(1));
     RenderSystem::Load(StorageManager::GetEntityById(2));
     RenderSystem::Load(StorageManager::GetEntityById(4));
@@ -104,11 +109,13 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        PhysicsSystem::Run(deltaTime);
         TransformSystem::Update(StorageManager::GetEntityById(1));
         TransformSystem::Update(StorageManager::GetEntityById(2));
         TransformSystem::Update(StorageManager::GetEntityById(3));
+        TransformSystem::Update(StorageManager::GetEntityById(42));
+        CameraSystem::ConstructCamera(StorageManager::GetEntityById(42), glm::vec3(0,2,-5));
         Animator::RunAnimation(StorageManager::GetEntityById(3), "mixamo.com", deltaTime);
-        PhysicsSystem::Run(deltaTime);
         RenderSystem::Draw(StorageManager::GetEntityById(1));
         RenderSystem::Draw(StorageManager::GetEntityById(2));
         RenderSystem::Draw(StorageManager::GetEntityById(4));

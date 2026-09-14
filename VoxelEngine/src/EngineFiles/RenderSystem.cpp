@@ -2,7 +2,7 @@
 
 Storage* RenderSystem::storage;
 Shader* RenderSystem::shader;
-
+int RenderSystem::renderCamera;
 void RenderSystem::Init(Storage* newStorage, Shader* newShader){
     storage = newStorage;
     shader = newShader;
@@ -44,14 +44,14 @@ void RenderSystem::Load(Entity* ent){
 void RenderSystem::Draw(Entity* ent){
     auto meshIt = storage->meshStorage.find(ent->GetID());
     auto openGLIt = storage->openGLStorage.find(ent->GetID());
-    auto colorIt = storage->colorStorage.find(ent->GetID());
     auto materialIt = storage->materialStorage.find(ent->GetID());
 
-    if (meshIt == storage->meshStorage.end() || openGLIt == storage->openGLStorage.end() || colorIt == storage->colorStorage.end()) {
+    if (meshIt == storage->meshStorage.end() || openGLIt == storage->openGLStorage.end()) {
         std::cout << "Couldnt Find Render Componenets" << std::endl;
         return;
     }
 
+    auto cameraIt = storage->cameraStorage.find(renderCamera);
     // Debug-only camera — hardcoded here for now, will move to a real camera/scene system later
     glm::mat4 view = glm::lookAt(
         glm::vec3(0.0f, 4.0f, 5.0f),
@@ -62,14 +62,13 @@ void RenderSystem::Draw(Entity* ent){
     glm::mat4 model = glm::mat4(1.0f);
 
     shader->Use();
-    shader->setMat4("view", view);
-    shader->setMat4("projection", projection);
+    shader->setMat4("view", cameraIt->second.view);
+    shader->setMat4("projection", cameraIt->second.projection);
 
     auto rigIt = storage->rigStorage.find(meshIt->second.rigRef);
 
     MeshComponent MeshComponent = meshIt->second;
     OpenGLComponent openGLComponent = openGLIt->second;
-    ColorComponent colorComponent = colorIt->second;
     MaterialComponent materialComponent = materialIt->second;
     TransformComponent transformComponent = storage->transformStorage[ent->GetID()];
 
@@ -85,4 +84,9 @@ void RenderSystem::Draw(Entity* ent){
     glBindVertexArray(openGLComponent.vao);
     glDrawElements(GL_TRIANGLES, openGLComponent.indexCount, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
+}
+
+
+void RenderSystem::SetRenderCamera(Entity* ent){
+    renderCamera = ent->GetID();
 }

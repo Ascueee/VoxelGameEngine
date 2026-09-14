@@ -33,11 +33,9 @@ void StorageManager::BuildModel(Model* model){
 
         if(!nodes[i].modelMesh.vertices.empty()){
             OpenGLComponent openGLComponent;
-            ColorComponent colorComponent;
             MaterialComponent materialComponent;
             nodes[i].modelMesh.rigRef = entityRigHolder;
             storage.openGLStorage.emplace(entityCounter, openGLComponent);
-            storage.colorStorage.emplace(entityCounter, colorComponent);
             storage.meshStorage.emplace(entityCounter, nodes[i].modelMesh);
             storage.materialStorage.emplace(entityCounter, materialComponent);
             //std::cout << "Added Rendering componenets";
@@ -81,13 +79,10 @@ void StorageManager::BuildModel(Model* model){
     }
 }
 
-
-
 void StorageManager::CreateCubeEntity(){
     Entity newEntity;
     OpenGLComponent openGLComponent;
     MeshComponent meshComponent;
-    ColorComponent colorComponent;
     MaterialComponent materialComponent;
     RigComponent rigComponent;
 
@@ -224,9 +219,22 @@ void StorageManager::CreateCubeEntity(){
     storage.entityStorage.emplace(entityCounter, newEntity);
     storage.openGLStorage.emplace(entityCounter, openGLComponent);
     storage.meshStorage.emplace(entityCounter, meshComponent);
-    storage.colorStorage.emplace(entityCounter, colorComponent);
     storage.rigStorage.emplace(entityCounter, rigComponent);
     storage.materialStorage.emplace(entityCounter, materialComponent);
+    entityCounter++;
+}
+
+void StorageManager::CreateCameraEntity(){
+    Entity newEntity;
+    TransformComponent transformComponent;
+    CameraComponent camComponent;
+
+    newEntity.SetID(entityCounter);
+    storage.entityStorage.emplace(entityCounter, newEntity);
+    storage.transformStorage.emplace(entityCounter, transformComponent);
+    storage.cameraStorage.emplace(entityCounter, camComponent);
+
+    std::cout << "THIS IS THE ID: Added Camera Entity {" << entityCounter << "}" << std::endl;
     entityCounter++;
 }
 

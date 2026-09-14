@@ -8,6 +8,7 @@ class StorageManager{
         StorageManager();
         static void CreateBlankEntity();
         static void CreateCubeEntity();
+        static void CreateCameraEntity();
         static void CreateDebugAABBEntity(Entity* debugEnt, glm::vec3 offSet = glm::vec3(0,0,0));
         static void BuildModel(Model* model);
         
