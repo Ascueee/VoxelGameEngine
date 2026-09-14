@@ -5,10 +5,7 @@
 #include <vector>
 #include <unordered_map>
 #include "Rig.h"
-
-struct TestComponent {
-    std::string msg = "Hello";
-};
+#include "Texture.h"
 
 struct TransformComponent{
     glm::vec3 position = glm::vec3(0.0f);
@@ -32,6 +29,11 @@ struct MeshComponent {
 
 struct ColorComponent{
     glm::vec3 color = glm::vec3(1.0f);
+};
+
+struct MaterialComponent{
+    glm::vec3 color = glm::vec3(1,1,1);
+    Texture* diffuse = nullptr;
 };
 
 struct RigComponent{

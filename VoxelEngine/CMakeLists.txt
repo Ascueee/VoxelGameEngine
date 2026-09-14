@@ -91,10 +91,11 @@ add_executable(HelloWindow
     # Engine
     src/EngineFiles/Entity.cpp
     src/EngineFiles/StorageManager.cpp
-    src/EngineFiles/System.cpp
     src/EngineFiles/Model.cpp
+    src/EngineFiles/Texture.cpp
     src/EngineFiles/Rig.cpp
     src/EngineFiles/EngineModelLoader.cpp
+    src/EngineFiles/EngineTextureLoader.cpp
     src/EngineFiles/Shader.cpp
     src/EngineFiles/Animator.cpp
     src/EngineFiles/RenderSystem.cpp

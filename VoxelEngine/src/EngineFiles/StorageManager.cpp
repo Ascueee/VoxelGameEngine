@@ -32,10 +32,12 @@ void StorageManager::BuildModel(Model* model){
         if(!nodes[i].modelMesh.vertices.empty()){
             OpenGLComponent openGLComponent;
             ColorComponent colorComponent;
+            MaterialComponent materialComponent;
             nodes[i].modelMesh.rigRef = entityRigHolder;
             storage.openGLStorage.emplace(entityCounter, openGLComponent);
             storage.colorStorage.emplace(entityCounter, colorComponent);
             storage.meshStorage.emplace(entityCounter, nodes[i].modelMesh);
+            storage.materialStorage.emplace(entityCounter, materialComponent);
             //std::cout << "Added Rendering componenets";
         }
 
@@ -84,50 +86,136 @@ void StorageManager::CreateCubeEntity(){
     OpenGLComponent openGLComponent;
     MeshComponent meshComponent;
     ColorComponent colorComponent;
+    MaterialComponent materialComponent;
     RigComponent rigComponent;
 
     meshComponent.vertices = {
+
+        // =========================
+        // FRONT (+Z)
+        // =========================
+
         // 0
-        -0.5f, -0.5f, -0.5f,   -1.0f, -1.0f, -1.0f, -1.0f,   0.0f, 0.0f, 0.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,    -1.0f, -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 0.0f, 0.0f,
+
         // 1
-        0.5f, -0.5f, -0.5f,   -1.0f, -1.0f, -1.0f, -1.0f,   0.0f, 0.0f, 0.0f, 0.0f,
+        0.5f, -0.5f,  0.5f,    1.0f, 0.0f,    -1.0f, -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 0.0f, 0.0f,
+
         // 2
-        0.5f,  0.5f, -0.5f,   -1.0f, -1.0f, -1.0f, -1.0f,   0.0f, 0.0f, 0.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,    1.0f, 1.0f,    -1.0f, -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 0.0f, 0.0f,
+
         // 3
-        -0.5f,  0.5f, -0.5f,   -1.0f, -1.0f, -1.0f, -1.0f,   0.0f, 0.0f, 0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,    0.0f, 1.0f,    -1.0f, -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 0.0f, 0.0f,
+
+
+        // =========================
+        // BACK (-Z)
+        // =========================
+
         // 4
-        -0.5f, -0.5f,  0.5f,   -1.0f, -1.0f, -1.0f, -1.0f,   0.0f, 0.0f, 0.0f, 0.0f,
+        0.5f, -0.5f, -0.5f,    0.0f, 0.0f,    -1.0f, -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 0.0f, 0.0f,
+
         // 5
-        0.5f, -0.5f,  0.5f,   -1.0f, -1.0f, -1.0f, -1.0f,   0.0f, 0.0f, 0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,    1.0f, 0.0f,    -1.0f, -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 0.0f, 0.0f,
+
         // 6
-        0.5f,  0.5f,  0.5f,   -1.0f, -1.0f, -1.0f, -1.0f,   0.0f, 0.0f, 0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,    1.0f, 1.0f,    -1.0f, -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 0.0f, 0.0f,
+
         // 7
-        -0.5f,  0.5f,  0.5f,   -1.0f, -1.0f, -1.0f, -1.0f,   0.0f, 0.0f, 0.0f, 0.0f
+        0.5f,  0.5f, -0.5f,    0.0f, 1.0f,    -1.0f, -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 0.0f, 0.0f,
+
+
+        // =========================
+        // LEFT (-X)
+        // =========================
+
+        // 8
+        -0.5f, -0.5f, -0.5f,    0.0f, 0.0f,    -1.0f, -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 0.0f, 0.0f,
+
+        // 9
+        -0.5f, -0.5f,  0.5f,    1.0f, 0.0f,    -1.0f, -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 0.0f, 0.0f,
+
+        // 10
+        -0.5f,  0.5f,  0.5f,    1.0f, 1.0f,    -1.0f, -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 0.0f, 0.0f,
+
+        // 11
+        -0.5f,  0.5f, -0.5f,    0.0f, 1.0f,    -1.0f, -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 0.0f, 0.0f,
+
+
+        // =========================
+        // RIGHT (+X)
+        // =========================
+
+        // 12
+        0.5f, -0.5f,  0.5f,    0.0f, 0.0f,    -1.0f, -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 0.0f, 0.0f,
+
+        // 13
+        0.5f, -0.5f, -0.5f,    1.0f, 0.0f,    -1.0f, -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 0.0f, 0.0f,
+
+        // 14
+        0.5f,  0.5f, -0.5f,    1.0f, 1.0f,    -1.0f, -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 0.0f, 0.0f,
+
+        // 15
+        0.5f,  0.5f,  0.5f,    0.0f, 1.0f,    -1.0f, -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 0.0f, 0.0f,
+
+
+        // =========================
+        // TOP (+Y)
+        // =========================
+
+        // 16
+        -0.5f,  0.5f,  0.5f,    0.0f, 0.0f,    -1.0f, -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 0.0f, 0.0f,
+
+        // 17
+        0.5f,  0.5f,  0.5f,    1.0f, 0.0f,    -1.0f, -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 0.0f, 0.0f,
+
+        // 18
+        0.5f,  0.5f, -0.5f,    1.0f, 1.0f,    -1.0f, -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 0.0f, 0.0f,
+
+        // 19
+        -0.5f,  0.5f, -0.5f,    0.0f, 1.0f,    -1.0f, -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 0.0f, 0.0f,
+
+
+        // =========================
+        // BOTTOM (-Y)
+        // =========================
+
+        // 20
+        -0.5f, -0.5f, -0.5f,    0.0f, 0.0f,    -1.0f, -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 0.0f, 0.0f,
+
+        // 21
+        0.5f, -0.5f, -0.5f,    1.0f, 0.0f,    -1.0f, -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 0.0f, 0.0f,
+
+        // 22
+        0.5f, -0.5f,  0.5f,    1.0f, 1.0f,    -1.0f, -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 0.0f, 0.0f,
+
+        // 23
+        -0.5f, -0.5f,  0.5f,    0.0f, 1.0f,    -1.0f, -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 0.0f, 0.0f
     };
     meshComponent.indices = {
         // Front
-        4, 5, 6,
-        6, 7, 4,
-
-        // Back
         0, 1, 2,
         2, 3, 0,
 
+        // Back
+        4, 5, 6,
+        6, 7, 4,
+
         // Left
-        0, 4, 7,
-        7, 3, 0,
+        8, 9, 10,
+        10, 11, 8,
 
         // Right
-        1, 5, 6,
-        6, 2, 1,
+        12, 13, 14,
+        14, 15, 12,
 
         // Top
-        3, 7, 6,
-        6, 2, 3,
+        16, 17, 18,
+        18, 19, 16,
 
         // Bottom
-        0, 4, 5,
-        5, 1, 0
+        20, 21, 22,
+        22, 23, 20
     };
 
     newEntity.SetID(entityCounter);
@@ -136,6 +224,7 @@ void StorageManager::CreateCubeEntity(){
     storage.meshStorage.emplace(entityCounter, meshComponent);
     storage.colorStorage.emplace(entityCounter, colorComponent);
     storage.rigStorage.emplace(entityCounter, rigComponent);
+    storage.materialStorage.emplace(entityCounter, materialComponent);
     entityCounter++;
 }
 

@@ -10,7 +10,6 @@
     
     struct Storage {
         std::unordered_map<int, Entity> entityStorage;
-        std::unordered_map<int, TestComponent> testStorage;
         std::unordered_map<int, OpenGLComponent> openGLStorage;
         std::unordered_map<int, MeshComponent> meshStorage;
         std::unordered_map<int, ColorComponent> colorStorage;
@@ -19,4 +18,5 @@
         std::unordered_map<int, AnimatorComponent> animatorStorage;
         std::unordered_map<int, AABBComponent> AABBStorage;
         std::unordered_map<int, PhysicsComponent> physicsStorage;
+        std::unordered_map<int, MaterialComponent> materialStorage;
     };
