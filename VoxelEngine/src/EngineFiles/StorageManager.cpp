@@ -1,5 +1,8 @@
 #include "StorageManager.h"
 
+Storage StorageManager::storage;
+int StorageManager::entityCounter;
+
 StorageManager::StorageManager(){}
 
 void StorageManager::CreateBlankEntity(){
@@ -10,7 +13,6 @@ void StorageManager::CreateBlankEntity(){
 
     entityCounter++;
 }
-
 
 //using a model asset from the EngineModelLoader it builds the model into a entity heirarchy
 void StorageManager::BuildModel(Model* model){

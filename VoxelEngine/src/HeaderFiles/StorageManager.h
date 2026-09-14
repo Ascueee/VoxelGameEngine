@@ -6,15 +6,15 @@
 class StorageManager{
     public:
         StorageManager();
-        void CreateBlankEntity();
-        void CreateCubeEntity();
-        void CreateDebugAABBEntity(Entity* debugEnt, glm::vec3 offSet = glm::vec3(0,0,0));
-        void BuildModel(Model* model);
+        static void CreateBlankEntity();
+        static void CreateCubeEntity();
+        static void CreateDebugAABBEntity(Entity* debugEnt, glm::vec3 offSet = glm::vec3(0,0,0));
+        static void BuildModel(Model* model);
         
-        Entity* GetEntityById (int entityID);
-        Storage* GetStorage();
+        static Entity* GetEntityById (int entityID);
+        static Storage* GetStorage();
 
     private:
-        int entityCounter;
-        Storage storage;
+        static int entityCounter;
+        static Storage storage;
 };
