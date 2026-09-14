@@ -14,8 +14,10 @@ class RenderSystem{
         static void Init(Storage* storage, Shader* shader);
         static void Load(Entity* ent);
         static void Draw(Entity* ent);
+        static void SetRenderCamera(Entity* ent);
         
     private:
         static Storage* storage;
         static Shader* shader;
+        static int renderCamera;
 };
