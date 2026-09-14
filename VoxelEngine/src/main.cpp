@@ -4,12 +4,14 @@
 #include <memory>
 #include "StorageManager.h"
 #include "EngineModelLoader.h"
-#include "System.h"
+#include "EngineTextureLoader.h"
 #include "Animator.h"
 #include "RenderSystem.h"
 #include "TransformSystem.h"
 #include "AABBSystem.h"
 #include "PhysicsSystem.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 
 
 
@@ -45,72 +47,78 @@ int main()
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
+
     glEnable(GL_DEPTH_TEST);
     EngineModelLoader::Load();
+    EngineTextureLoader::Load();
 
-        TransformSystem::Init(manager.GetStorage());
-        Animator::storage = manager.GetStorage();
-        RenderSystem::Init(manager.GetStorage(), 
-        new Shader("/Users/hayyan/Desktop/Repos/CPPEngine/VoxelEngine/src/Shaders/base.vert",
-            "/Users/hayyan/Desktop/Repos/CPPEngine/VoxelEngine/src/Shaders/base.frag"));
-        AABBSystem::Init(manager.GetStorage());
-        PhysicsSystem::Init(manager.GetStorage());
+    TransformSystem::Init(manager.GetStorage());
+    Animator::storage = manager.GetStorage();
+    RenderSystem::Init(manager.GetStorage(), 
+    new Shader("/Users/hayyan/Desktop/Repos/CPPEngine/VoxelEngine/src/Shaders/base.vert",
+        "/Users/hayyan/Desktop/Repos/CPPEngine/VoxelEngine/src/Shaders/base.frag"));
+    AABBSystem::Init(manager.GetStorage());
+    PhysicsSystem::Init(manager.GetStorage());
 
-        manager.CreateBlankEntity();
-        manager.CreateCubeEntity();
-        manager.GetStorage()->colorStorage[1].color = glm::vec3(0,0,1);
-        manager.GetStorage()->transformStorage[1].scale = glm::vec3(10,1,10);
-        PhysicsComponent boxPhys;
-        boxPhys.isStatic = true;
-        manager.GetStorage()->physicsStorage.emplace(manager.GetEntityById(1)->GetID(), boxPhys);
+    manager.CreateBlankEntity();
+    manager.CreateCubeEntity();
+    manager.GetStorage()->colorStorage[1].color = glm::vec3(1,1,1);
+    manager.GetStorage()->materialStorage[1].diffuse = EngineTextureLoader::GetTexture("Brick");
+    manager.GetStorage()->transformStorage[1].scale = glm::vec3(10,1,10);
+    PhysicsComponent boxPhys;
+    boxPhys.isStatic = true;
+    manager.GetStorage()->physicsStorage.emplace(manager.GetEntityById(1)->GetID(), boxPhys);
 
-        manager.CreateCubeEntity();
-        manager.GetStorage()->colorStorage[2].color = glm::vec3(1,0,1);
-        manager.GetStorage()->transformStorage[2].position = glm::vec3(-2,1,0);
-        manager.GetStorage()->transformStorage[2].scale = glm::vec3(1,1,1);
+    manager.CreateCubeEntity();
+    manager.GetStorage()->materialStorage[2].color = glm::vec3(1,1,0);
+    manager.GetStorage()->materialStorage[2].diffuse = EngineTextureLoader::GetTexture("grass");
+    manager.GetStorage()->transformStorage[2].position = glm::vec3(-2,1,0);
+    manager.GetStorage()->transformStorage[2].scale = glm::vec3(1,1,1);
 
-        manager.BuildModel(EngineModelLoader::GetModel("Walking"));
-        manager.GetStorage()->transformStorage[3].scale = glm::vec3(0.1f);
-        manager.GetStorage()->transformStorage[3].position = glm::vec3(0,20,0);
-        PhysicsComponent modelPhys;
-        manager.GetStorage()->physicsStorage.emplace(manager.GetEntityById(3)->GetID(), modelPhys);
+    manager.BuildModel(EngineModelLoader::GetModel("Walking"));
+    manager.GetStorage()->transformStorage[3].scale = glm::vec3(0.1f);
+    manager.GetStorage()->transformStorage[3].position = glm::vec3(0,2,0);
+    manager.GetStorage()->materialStorage[4].color = glm::vec3(1,0,0);
+    manager.GetStorage()->materialStorage[4].diffuse = EngineTextureLoader::GetTexture("Brick");
+    PhysicsComponent modelPhys;
+    manager.GetStorage()->physicsStorage.emplace(manager.GetEntityById(3)->GetID(), modelPhys);
 
-        AABBSystem::ConstructAABB(manager.GetEntityById(3), glm::vec3(1,1,1));
-        AABBSystem::ConstructAABB(manager.GetEntityById(1), glm::vec3(1,0.5,1));
+    AABBSystem::ConstructAABB(manager.GetEntityById(3), glm::vec3(1,1,1));
+    AABBSystem::ConstructAABB(manager.GetEntityById(1), glm::vec3(1,0.5,1));
 
-        PhysicsSystem::Add(manager.GetEntityById(3));
-        PhysicsSystem::Add(manager.GetEntityById(1));
-        
-        RenderSystem::Load(manager.GetEntityById(1));
-        RenderSystem::Load(manager.GetEntityById(2));
-        RenderSystem::Load(manager.GetEntityById(4));
+    PhysicsSystem::Add(manager.GetEntityById(3));
+    PhysicsSystem::Add(manager.GetEntityById(1));
+    
+    RenderSystem::Load(manager.GetEntityById(1));
+    RenderSystem::Load(manager.GetEntityById(2));
+    RenderSystem::Load(manager.GetEntityById(4));
 
-        float deltaTime = 0.0f;
-        float lastFrame = 0.0f;
+    float deltaTime = 0.0f;
+    float lastFrame = 0.0f;
 
-        while (!glfwWindowShouldClose(window))
-        {
-            float currentFrame = static_cast<float>(glfwGetTime());
-            deltaTime = currentFrame - lastFrame;
-            lastFrame = currentFrame;
+    while (!glfwWindowShouldClose(window))
+    {
+        float currentFrame = static_cast<float>(glfwGetTime());
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
 
-            processInput(window, deltaTime);
+        processInput(window, deltaTime);
 
-            glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            TransformSystem::Update(manager.GetEntityById(1));
-            TransformSystem::Update(manager.GetEntityById(2));
-            TransformSystem::Update(manager.GetEntityById(3));
-            Animator::RunAnimation(manager.GetEntityById(3), "mixamo.com", deltaTime);
-            PhysicsSystem::Run(deltaTime);
-            RenderSystem::Draw(manager.GetEntityById(1));
-            RenderSystem::Draw(manager.GetEntityById(2));
-            RenderSystem::Draw(manager.GetEntityById(4));
+        TransformSystem::Update(manager.GetEntityById(1));
+        TransformSystem::Update(manager.GetEntityById(2));
+        TransformSystem::Update(manager.GetEntityById(3));
+        Animator::RunAnimation(manager.GetEntityById(3), "mixamo.com", deltaTime);
+        PhysicsSystem::Run(deltaTime);
+        RenderSystem::Draw(manager.GetEntityById(1));
+        RenderSystem::Draw(manager.GetEntityById(2));
+        RenderSystem::Draw(manager.GetEntityById(4));
 
-            glfwSwapBuffers(window);
-            glfwPollEvents();
-        }
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
 
     glfwTerminate();
     return 0;

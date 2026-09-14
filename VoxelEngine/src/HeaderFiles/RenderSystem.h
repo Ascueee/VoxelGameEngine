@@ -6,6 +6,7 @@
 #include "Shader.h"
 #include "Entity.h"
 #include "Storage.h"
+#include "EngineTextureLoader.h"
 
 class RenderSystem{
     public:

@@ -23,14 +23,17 @@ void RenderSystem::Load(Entity* ent){
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, openGLComponent.ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER,meshComponent.indices.size() * sizeof(unsigned int),meshComponent.indices.data(), GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 13 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 13 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-     glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)(7 * sizeof(float)));
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 13 * sizeof(float), (void*)(5 * sizeof(float)));
     glEnableVertexAttribArray(2);
+
+     glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 13 * sizeof(float), (void*)(9 * sizeof(float)));
+    glEnableVertexAttribArray(3);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0); 
@@ -42,6 +45,7 @@ void RenderSystem::Draw(Entity* ent){
     auto meshIt = storage->meshStorage.find(ent->GetID());
     auto openGLIt = storage->openGLStorage.find(ent->GetID());
     auto colorIt = storage->colorStorage.find(ent->GetID());
+    auto materialIt = storage->materialStorage.find(ent->GetID());
 
     if (meshIt == storage->meshStorage.end() || openGLIt == storage->openGLStorage.end() || colorIt == storage->colorStorage.end()) {
         std::cout << "Couldnt Find Render Componenets" << std::endl;
@@ -50,7 +54,7 @@ void RenderSystem::Draw(Entity* ent){
 
     // Debug-only camera — hardcoded here for now, will move to a real camera/scene system later
     glm::mat4 view = glm::lookAt(
-        glm::vec3(0.0f, 4.0f, 10.0f),
+        glm::vec3(0.0f, 4.0f, 5.0f),
         glm::vec3(0.0f, 0.0f, 0.0f),
         glm::vec3(0.0f, 1.0f, 0.0f)
     );
@@ -63,13 +67,16 @@ void RenderSystem::Draw(Entity* ent){
 
     auto rigIt = storage->rigStorage.find(meshIt->second.rigRef);
 
-    MeshComponent& MeshComponent = meshIt->second;
-    OpenGLComponent& openGLComponent = openGLIt->second;
-    ColorComponent& colorComponent = colorIt->second;
-    TransformComponent& transformComponent = storage->transformStorage[ent->GetID()];
+    MeshComponent MeshComponent = meshIt->second;
+    OpenGLComponent openGLComponent = openGLIt->second;
+    ColorComponent colorComponent = colorIt->second;
+    MaterialComponent materialComponent = materialIt->second;
+    TransformComponent transformComponent = storage->transformStorage[ent->GetID()];
 
+    glBindTexture(GL_TEXTURE_2D, materialComponent.diffuse->GetHandle());
+    shader->setInt("diffuseTexture", 0);
     shader->setMat4("model", transformComponent.model);
-    shader->setVec3("color", colorComponent.color);
+    shader->setVec3("color", materialComponent.color);
 
     if (rigIt != storage->rigStorage.end() && !rigIt->second.finalBoneMatrices.empty()) {
         shader->setMat4Array("finalBonesMatrices", rigIt->second.finalBoneMatrices);
