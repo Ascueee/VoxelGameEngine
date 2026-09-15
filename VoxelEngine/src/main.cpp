@@ -11,6 +11,7 @@
 #include "AABBSystem.h"
 #include "PhysicsSystem.h"
 #include "CameraSystem.h"
+#include "PlayerMovementSystem.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
@@ -61,32 +62,33 @@ int main()
     StorageManager::CreateBlankEntity();
     StorageManager::CreateCubeEntity();
     StorageManager::GetStorage()->materialStorage[1].diffuse = EngineTextureLoader::GetTexture("Brick");
-    StorageManager::GetStorage()->transformStorage[1].scale = glm::vec3(10,1,10);
+    StorageManager::GetStorage()->transformStorage[1].scale = glm::vec3(100,1,100);
     PhysicsComponent boxPhys;
     boxPhys.isStatic = true;
     StorageManager::GetStorage()->physicsStorage.emplace(StorageManager::GetEntityById(1)->GetID(), boxPhys);
 
     StorageManager::CreateCubeEntity();
-    StorageManager::GetStorage()->materialStorage[2].color = glm::vec3(1,1,0);
+    StorageManager::GetStorage()->materialStorage[2].color = glm::vec3(1,0,0);
     StorageManager::GetStorage()->materialStorage[2].diffuse = EngineTextureLoader::GetTexture("Grass");
     StorageManager::GetStorage()->transformStorage[2].position = glm::vec3(-2,1,0);
     StorageManager::GetStorage()->transformStorage[2].scale = glm::vec3(1,1,1);
 
-    StorageManager::BuildModel(EngineModelLoader::GetModel("Ymca Dance"));
+    StorageManager::BuildModel(EngineModelLoader::GetModel("Walking"));
     StorageManager::GetStorage()->transformStorage[3].scale = glm::vec3(0.1f);
-    StorageManager::GetStorage()->transformStorage[3].position = glm::vec3(0,20,0);
+    StorageManager::GetStorage()->transformStorage[3].position = glm::vec3(-1,20,0);
     StorageManager::GetStorage()->materialStorage[4].color = glm::vec3(1,1,1);
-    StorageManager::GetStorage()->materialStorage[4].diffuse = EngineTextureLoader::GetTexture("Brick");
+    StorageManager::GetStorage()->materialStorage[4].diffuse = EngineTextureLoader::GetTexture("Grass");
+    StorageManager::GetStorage()->AABBStorage[3].offSet = glm::vec3(0,2,0);
     PhysicsComponent modelPhys;
 
     StorageManager::GetStorage()->physicsStorage.emplace(StorageManager::GetEntityById(3)->GetID(), modelPhys);
-    AABBSystem::ConstructAABB(StorageManager::GetEntityById(3), glm::vec3(1,1,1));
-    AABBSystem::ConstructAABB(StorageManager::GetEntityById(1), glm::vec3(1,0.5,1));
+    AABBSystem::ConstructAABB(StorageManager::GetEntityById(3), glm::vec3(1,2,1));
+    AABBSystem::ConstructAABB(StorageManager::GetEntityById(1), glm::vec3(2,0.5,2));
 
     StorageManager::CreateCameraEntity();
-    StorageManager::GetStorage()->entityStorage[42].SetParentID(3);
-    StorageManager::GetStorage()->entityStorage[3].SetChild(42);
-    RenderSystem::SetRenderCamera(StorageManager::GetEntityById(42));
+    StorageManager::GetStorage()->entityStorage[70].SetParentID(3);
+    StorageManager::GetStorage()->entityStorage[3].SetChild(70);
+    RenderSystem::SetRenderCamera(StorageManager::GetEntityById(70));
 
     PhysicsSystem::Add(StorageManager::GetEntityById(3));
     PhysicsSystem::Add(StorageManager::GetEntityById(1));
@@ -104,8 +106,6 @@ int main()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        processInput(window, deltaTime);
-
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -113,12 +113,13 @@ int main()
         TransformSystem::Update(StorageManager::GetEntityById(1));
         TransformSystem::Update(StorageManager::GetEntityById(2));
         TransformSystem::Update(StorageManager::GetEntityById(3));
-        TransformSystem::Update(StorageManager::GetEntityById(42));
-        CameraSystem::ConstructCamera(StorageManager::GetEntityById(42), glm::vec3(0,2,-5));
+        TransformSystem::Update(StorageManager::GetEntityById(70));
+        CameraSystem::ConstructCamera(StorageManager::GetEntityById(70), glm::vec3(0,2.0f,0));
         Animator::RunAnimation(StorageManager::GetEntityById(3), "mixamo.com", deltaTime);
         RenderSystem::Draw(StorageManager::GetEntityById(1));
         RenderSystem::Draw(StorageManager::GetEntityById(2));
         RenderSystem::Draw(StorageManager::GetEntityById(4));
+        processInput(window, deltaTime);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -132,6 +133,14 @@ void processInput(GLFWwindow* window, float deltaTime)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        PlayerMovementSystem::Move(StorageManager::GetEntityById(3), Direction::FORWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        PlayerMovementSystem::Move(StorageManager::GetEntityById(3), Direction::BACKWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        PlayerMovementSystem::Move(StorageManager::GetEntityById(3), Direction::RIGHT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        PlayerMovementSystem::Move(StorageManager::GetEntityById(3), Direction::LEFT, deltaTime);
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)

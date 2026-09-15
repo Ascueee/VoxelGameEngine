@@ -44,6 +44,7 @@ void StorageManager::BuildModel(Model* model){
         if(nodes[i].parentId == -1){
             AABBComponent AABBComponent;
             RigComponent rigComponent;
+            PlayerMovement playerMovementComponent;
             rigComponent.rig = model->GetRig();
             rigComponent.finalBoneMatrices.assign(rigComponent.rig.boneCounter, glm::mat4(1.0f));
 
@@ -55,6 +56,7 @@ void StorageManager::BuildModel(Model* model){
 
             storage.rigStorage.emplace(entityCounter, rigComponent);
             storage.AABBStorage.emplace(entityCounter, AABBComponent);
+            storage.playerMovementStorage.emplace(entityCounter, playerMovementComponent);
             entityRigHolder = newEntity.GetID();
             std::cout << "Added rig to root node";
         }

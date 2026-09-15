@@ -103,6 +103,7 @@ add_executable(HelloWindow
     src/EngineFiles/AABBSystem.cpp
     src/EngineFiles/PhysicsSystem.cpp
     src/EngineFiles/CameraSystem.cpp
+    src/EngineFiles/PlayerMovementSystem.cpp
 )
 
 

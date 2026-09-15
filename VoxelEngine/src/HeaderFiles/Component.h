@@ -12,6 +12,8 @@ struct TransformComponent{
     glm::vec3 rotation = glm::vec3(0.0f);
     glm::vec3 scale = glm::vec3(1.0f);
     glm::mat4 model = glm::mat4(1.0f);
+    glm::vec3 front = glm::vec3(0,0,1);
+    glm::vec3 up = glm::vec3(0,1,0);
 };
 
 struct OpenGLComponent {
@@ -45,8 +47,13 @@ struct PhysicsComponent{
     bool isStatic = false;
 };
 
+struct PlayerMovement{
+    float speed = 5.0f;
+};
+
 struct AABBComponent{
     glm::vec3 center = glm::vec3(0,0,0);
+    glm::vec3 offSet = glm::vec3(0,0,0);
     glm::vec3 size = glm::vec3(0,0,0);
     glm::vec3 halfExtents = glm::vec3(0,0,0);
     glm::vec3 min = glm::vec3(0,0,0);
@@ -56,8 +63,6 @@ struct AABBComponent{
 struct CameraComponent{
     glm::mat4 view;
     glm::mat4 projection;
-    glm::vec3 front = glm::vec3(0,0,1);
-    glm::vec3 up = glm::vec3(0,1,0);
 };
 
  
