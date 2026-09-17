@@ -18,10 +18,10 @@ void RenderSystem::Load(Entity* ent){
 
     glBindVertexArray(openGLComponent.vao);
     glBindBuffer(GL_ARRAY_BUFFER, openGLComponent.vbo);
-    glBufferData(GL_ARRAY_BUFFER, meshComponent.vertices.size() * sizeof(float),meshComponent.vertices.data(),GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, meshComponent.mesh.vertices.size() * sizeof(float),meshComponent.mesh.vertices.data(),GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, openGLComponent.ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER,meshComponent.indices.size() * sizeof(unsigned int),meshComponent.indices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,meshComponent.mesh.indices.size() * sizeof(unsigned int),meshComponent.mesh.indices.data(), GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 13 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -38,7 +38,7 @@ void RenderSystem::Load(Entity* ent){
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0); 
 
-    openGLComponent.indexCount = static_cast<GLsizei>(meshComponent.indices.size());
+    openGLComponent.indexCount = static_cast<GLsizei>(meshComponent.mesh.indices.size());
 }
 
 void RenderSystem::Draw(Entity* ent){
@@ -47,20 +47,12 @@ void RenderSystem::Draw(Entity* ent){
     auto materialIt = storage->materialStorage.find(ent->GetID());
 
     if (meshIt == storage->meshStorage.end() || openGLIt == storage->openGLStorage.end()) {
-        std::cout << "Couldnt Find Render Componenets" << std::endl;
+        std::cout << "Couldnt Find Render Componenets on {" <<  ent->GetID() << "}" << std::endl;
         return;
     }
 
     auto cameraIt = storage->cameraStorage.find(renderCamera);
-    // Debug-only camera — hardcoded here for now, will move to a real camera/scene system later
-    glm::mat4 view = glm::lookAt(
-        glm::vec3(0.0f, 4.0f, 5.0f),
-        glm::vec3(0.0f, 0.0f, 0.0f),
-        glm::vec3(0.0f, 1.0f, 0.0f)
-    );
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f),(float)1920 / (float)1080, 0.1f, 100.0f);
-    glm::mat4 model = glm::mat4(1.0f);
-
+    
     shader->Use();
     shader->setMat4("view", cameraIt->second.view);
     shader->setMat4("projection", cameraIt->second.projection);

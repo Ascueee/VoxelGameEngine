@@ -5,21 +5,22 @@ int StorageManager::entityCounter;
 
 StorageManager::StorageManager(){}
 
-void StorageManager::CreateBlankEntity(){
+Entity* StorageManager::CreateBlankEntity(){
     Entity newEntity;
     TransformComponent transformComponent;
     newEntity.SetID(entityCounter);
     storage.entityStorage.emplace(entityCounter, newEntity);
 
     entityCounter++;
+    return &storage.entityStorage[newEntity.GetID()];
 }
 
 //using a model asset from the EngineModelLoader it builds the model into a entity heirarchy
-void StorageManager::BuildModel(Model* model){
+Entity* StorageManager::BuildModel(Model* model){
     auto& nodes = model->GetNodes();
     std::vector<int> nodeToEntityId(nodes.size());
 
-    int entityRigHolder =0;
+    int rootEntity =0;
     for(size_t i = 0; i < nodes.size(); i++){
         Entity newEntity;    
         newEntity.SetID(entityCounter);
@@ -31,10 +32,10 @@ void StorageManager::BuildModel(Model* model){
             newEntity.SetParentID(parentEntityId);
         }
 
-        if(!nodes[i].modelMesh.vertices.empty()){
+        if(!nodes[i].modelMesh.mesh.vertices.empty()){
             OpenGLComponent openGLComponent;
             MaterialComponent materialComponent;
-            nodes[i].modelMesh.rigRef = entityRigHolder;
+            nodes[i].modelMesh.rigRef = rootEntity;
             storage.openGLStorage.emplace(entityCounter, openGLComponent);
             storage.meshStorage.emplace(entityCounter, nodes[i].modelMesh);
             storage.materialStorage.emplace(entityCounter, materialComponent);
@@ -57,7 +58,7 @@ void StorageManager::BuildModel(Model* model){
             storage.rigStorage.emplace(entityCounter, rigComponent);
             storage.AABBStorage.emplace(entityCounter, AABBComponent);
             storage.playerMovementStorage.emplace(entityCounter, playerMovementComponent);
-            entityRigHolder = newEntity.GetID();
+            rootEntity = newEntity.GetID();
             std::cout << "Added rig to root node";
         }
 
@@ -79,16 +80,18 @@ void StorageManager::BuildModel(Model* model){
 
         entityCounter++;
     }
+
+    return &storage.entityStorage[rootEntity];
 }
 
-void StorageManager::CreateCubeEntity(){
+Entity* StorageManager::CreateCubeEntity(){
     Entity newEntity;
     OpenGLComponent openGLComponent;
     MeshComponent meshComponent;
     MaterialComponent materialComponent;
     RigComponent rigComponent;
 
-    meshComponent.vertices = {
+    meshComponent.mesh.vertices = {
 
         // =========================
         // FRONT (+Z)
@@ -191,7 +194,7 @@ void StorageManager::CreateCubeEntity(){
         // 23
         -0.5f, -0.5f,  0.5f,    0.0f, 1.0f,    -1.0f, -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 0.0f, 0.0f
     };
-    meshComponent.indices = {
+    meshComponent.mesh.indices = {
         // Front
         0, 1, 2,
         2, 3, 0,
@@ -224,9 +227,33 @@ void StorageManager::CreateCubeEntity(){
     storage.rigStorage.emplace(entityCounter, rigComponent);
     storage.materialStorage.emplace(entityCounter, materialComponent);
     entityCounter++;
+
+    return &storage.entityStorage[newEntity.GetID()];
 }
 
-void StorageManager::CreateCameraEntity(){
+
+Entity* StorageManager::CreateChunkEntity(){
+    Entity newEntity;
+    TransformComponent transformComponent;
+    ChunkComponent chunkComponent;
+    MeshComponent meshComponent;
+    OpenGLComponent openGL;
+    MaterialComponent materialComponent;
+
+    newEntity.SetID(entityCounter);
+    storage.entityStorage.emplace(entityCounter, newEntity);
+    storage.transformStorage.emplace(entityCounter, transformComponent);
+    storage.chunkStorage.emplace(entityCounter, chunkComponent);
+    storage.meshStorage.emplace(entityCounter, meshComponent);
+    storage.materialStorage.emplace(entityCounter, materialComponent);
+    storage.openGLStorage.emplace(entityCounter, openGL);
+    //std::cout << "Added Chunk Entity {" << entityCounter << "}" << std::endl;
+    entityCounter++;
+
+    return &storage.entityStorage[newEntity.GetID()];
+}
+
+Entity* StorageManager::CreateCameraEntity(){
     Entity newEntity;
     TransformComponent transformComponent;
     CameraComponent camComponent;
@@ -238,6 +265,8 @@ void StorageManager::CreateCameraEntity(){
 
     std::cout << "THIS IS THE ID: Added Camera Entity {" << entityCounter << "}" << std::endl;
     entityCounter++;
+
+    return &storage.entityStorage[newEntity.GetID()];
 }
 
 Entity* StorageManager::GetEntityById(int id){

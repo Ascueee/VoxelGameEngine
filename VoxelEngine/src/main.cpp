@@ -12,6 +12,8 @@
 #include "PhysicsSystem.h"
 #include "CameraSystem.h"
 #include "PlayerMovementSystem.h"
+#include "ChunkSystem.h"
+#include "WorldGenerator.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
@@ -48,6 +50,7 @@ int main()
     }
 
     glEnable(GL_DEPTH_TEST);
+  
     EngineModelLoader::Load();
     EngineTextureLoader::Load();
 
@@ -56,46 +59,54 @@ int main()
     RenderSystem::Init(StorageManager::GetStorage(), 
     new Shader("/Users/hayyan/Desktop/Repos/CPPEngine/VoxelEngine/src/Shaders/base.vert",
         "/Users/hayyan/Desktop/Repos/CPPEngine/VoxelEngine/src/Shaders/base.frag"));
+        
     AABBSystem::Init(StorageManager::GetStorage());
     PhysicsSystem::Init(StorageManager::GetStorage());
 
-    StorageManager::CreateBlankEntity();
-    StorageManager::CreateCubeEntity();
-    StorageManager::GetStorage()->materialStorage[1].diffuse = EngineTextureLoader::GetTexture("Brick");
-    StorageManager::GetStorage()->transformStorage[1].scale = glm::vec3(100,1,100);
+    Entity* blankEnt = StorageManager::CreateBlankEntity();
+
+    Entity* groundCube = StorageManager::CreateCubeEntity();
+    StorageManager::GetStorage()->materialStorage[groundCube->GetID()].diffuse = EngineTextureLoader::GetTexture("Brick");
+    StorageManager::GetStorage()->transformStorage[groundCube->GetID()].scale = glm::vec3(100,1,100);
     PhysicsComponent boxPhys;
     boxPhys.isStatic = true;
     StorageManager::GetStorage()->physicsStorage.emplace(StorageManager::GetEntityById(1)->GetID(), boxPhys);
 
-    StorageManager::CreateCubeEntity();
-    StorageManager::GetStorage()->materialStorage[2].color = glm::vec3(1,0,0);
-    StorageManager::GetStorage()->materialStorage[2].diffuse = EngineTextureLoader::GetTexture("Grass");
-    StorageManager::GetStorage()->transformStorage[2].position = glm::vec3(-2,1,0);
-    StorageManager::GetStorage()->transformStorage[2].scale = glm::vec3(1,1,1);
+    Entity* testCube = StorageManager::CreateCubeEntity();
+    StorageManager::GetStorage()->materialStorage[testCube->GetID()].color = glm::vec3(1,0,0);
+    StorageManager::GetStorage()->materialStorage[testCube->GetID()].diffuse = EngineTextureLoader::GetTexture("Grass");
+    StorageManager::GetStorage()->transformStorage[testCube->GetID()].position = glm::vec3(-2,1,0);
+    StorageManager::GetStorage()->transformStorage[testCube->GetID()].scale = glm::vec3(1,1,1);
 
-    StorageManager::BuildModel(EngineModelLoader::GetModel("Walking"));
-    StorageManager::GetStorage()->transformStorage[3].scale = glm::vec3(0.1f);
-    StorageManager::GetStorage()->transformStorage[3].position = glm::vec3(-1,20,0);
-    StorageManager::GetStorage()->materialStorage[4].color = glm::vec3(1,1,1);
-    StorageManager::GetStorage()->materialStorage[4].diffuse = EngineTextureLoader::GetTexture("Grass");
-    StorageManager::GetStorage()->AABBStorage[3].offSet = glm::vec3(0,2,0);
+    Entity* walkingRootEntity = StorageManager::BuildModel(EngineModelLoader::GetModel("Walking"));
+    StorageManager::GetStorage()->transformStorage[walkingRootEntity->GetID()].scale = glm::vec3(0.1f);
+    StorageManager::GetStorage()->transformStorage[walkingRootEntity->GetID()].position = glm::vec3(50,40,0);
+    StorageManager::GetStorage()->materialStorage[walkingRootEntity->GetID() + 1].color = glm::vec3(1,1,1);
+    StorageManager::GetStorage()->materialStorage[walkingRootEntity->GetID() + 1].diffuse = EngineTextureLoader::GetTexture("Grass");
+    StorageManager::GetStorage()->AABBStorage[walkingRootEntity->GetID()].offSet = glm::vec3(0,2,0);
     PhysicsComponent modelPhys;
 
     StorageManager::GetStorage()->physicsStorage.emplace(StorageManager::GetEntityById(3)->GetID(), modelPhys);
-    AABBSystem::ConstructAABB(StorageManager::GetEntityById(3), glm::vec3(1,2,1));
-    AABBSystem::ConstructAABB(StorageManager::GetEntityById(1), glm::vec3(2,0.5,2));
+    AABBSystem::ConstructAABB(StorageManager::GetEntityById(walkingRootEntity->GetID()), glm::vec3(10,2,10));
+    AABBSystem::ConstructAABB(StorageManager::GetEntityById(groundCube->GetID()), glm::vec3(2,0.5,2));
 
-    StorageManager::CreateCameraEntity();
-    StorageManager::GetStorage()->entityStorage[70].SetParentID(3);
-    StorageManager::GetStorage()->entityStorage[3].SetChild(70);
-    RenderSystem::SetRenderCamera(StorageManager::GetEntityById(70));
+    Entity* cameraEnt = StorageManager::CreateCameraEntity();
+    StorageManager::GetStorage()->entityStorage[cameraEnt->GetID()].SetParentID(walkingRootEntity->GetID());
+    StorageManager::GetStorage()->entityStorage[walkingRootEntity->GetID()].SetChild(cameraEnt->GetID());
+    RenderSystem::SetRenderCamera(StorageManager::GetEntityById(cameraEnt->GetID()));
 
-    PhysicsSystem::Add(StorageManager::GetEntityById(3));
-    PhysicsSystem::Add(StorageManager::GetEntityById(1));
+    //Generates the world
+    WorldGenerator::GenerateWorld(cameraEnt, new Shader("/Users/hayyan/Desktop/Repos/CPPEngine/VoxelEngine/src/Shaders/chunk.vert",
+        "/Users/hayyan/Desktop/Repos/CPPEngine/VoxelEngine/src/Shaders/chunk.frag"));
 
-    RenderSystem::Load(StorageManager::GetEntityById(1));
-    RenderSystem::Load(StorageManager::GetEntityById(2));
-    RenderSystem::Load(StorageManager::GetEntityById(4));
+    //Adds entities to physics system
+    PhysicsSystem::Add(StorageManager::GetEntityById(walkingRootEntity->GetID()));
+    PhysicsSystem::Add(StorageManager::GetEntityById(groundCube->GetID()));
+
+    //Loads entities into the renderer
+    RenderSystem::Load(StorageManager::GetEntityById(groundCube->GetID()));
+    RenderSystem::Load(StorageManager::GetEntityById(testCube->GetID()));
+    RenderSystem::Load(StorageManager::GetEntityById(walkingRootEntity->GetID() + 1));
 
     float deltaTime = 0.0f;
     float lastFrame = 0.0f;
@@ -110,15 +121,18 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         PhysicsSystem::Run(deltaTime);
-        TransformSystem::Update(StorageManager::GetEntityById(1));
-        TransformSystem::Update(StorageManager::GetEntityById(2));
-        TransformSystem::Update(StorageManager::GetEntityById(3));
-        TransformSystem::Update(StorageManager::GetEntityById(70));
-        CameraSystem::ConstructCamera(StorageManager::GetEntityById(70), glm::vec3(0,2.0f,0));
-        Animator::RunAnimation(StorageManager::GetEntityById(3), "mixamo.com", deltaTime);
-        RenderSystem::Draw(StorageManager::GetEntityById(1));
-        RenderSystem::Draw(StorageManager::GetEntityById(2));
-        RenderSystem::Draw(StorageManager::GetEntityById(4));
+        TransformSystem::Update(StorageManager::GetEntityById(groundCube->GetID()));
+        TransformSystem::Update(StorageManager::GetEntityById(testCube->GetID()));
+        TransformSystem::Update(StorageManager::GetEntityById(walkingRootEntity->GetID()));
+        TransformSystem::Update(StorageManager::GetEntityById(cameraEnt->GetID()));
+        CameraSystem::ConstructCamera(StorageManager::GetEntityById(cameraEnt->GetID()), glm::vec3(0,2.0f,-10));
+        Animator::RunAnimation(StorageManager::GetEntityById(walkingRootEntity->GetID()), "mixamo.com", deltaTime);
+
+
+        WorldGenerator::RenderWorld(StorageManager::GetEntityById(walkingRootEntity->GetID()));
+        RenderSystem::Draw(StorageManager::GetEntityById(groundCube->GetID()));
+        RenderSystem::Draw(StorageManager::GetEntityById(testCube->GetID()));
+        RenderSystem::Draw(StorageManager::GetEntityById(walkingRootEntity->GetID() + 1));
         processInput(window, deltaTime);
 
         glfwSwapBuffers(window);

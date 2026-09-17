@@ -116,8 +116,8 @@ void EngineModelLoader::ProcessMesh(aiMesh *mesh, const aiScene *scene, ModelNod
     //Bone extraction needs to happen here
     ExtractRig(mesh, scene, vertices, modelName);
 
-    modelMesh.vertices = vertices;
-    modelMesh.indices = indices;
+    modelMesh.mesh.vertices = vertices;
+    modelMesh.mesh.indices = indices;
 
     modelNode.modelMesh = modelMesh;
 }

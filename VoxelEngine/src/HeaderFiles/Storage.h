@@ -20,4 +20,5 @@
         std::unordered_map<int, MaterialComponent> materialStorage;
         std::unordered_map<int, CameraComponent> cameraStorage;
         std::unordered_map<int, PlayerMovement> playerMovementStorage;
+        std::unordered_map<int, ChunkComponent> chunkStorage;
     };
