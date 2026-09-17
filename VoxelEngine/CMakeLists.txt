@@ -104,7 +104,23 @@ add_executable(HelloWindow
     src/EngineFiles/PhysicsSystem.cpp
     src/EngineFiles/CameraSystem.cpp
     src/EngineFiles/PlayerMovementSystem.cpp
+    src/EngineFiles/ChunkSystem.cpp
+    src/EngineFiles/ChunkRenderer.cpp
+    src/EngineFiles/WorldGenerator.cpp
 )
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+
+    target_compile_options(HelloWindow PRIVATE
+        -fsanitize=address,undefined
+        -fno-omit-frame-pointer
+    )
+
+    target_link_options(HelloWindow PRIVATE
+        -fsanitize=address,undefined
+    )
+
+endif()
 
 
 # ============================================================

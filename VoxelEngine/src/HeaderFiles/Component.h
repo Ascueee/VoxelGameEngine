@@ -6,6 +6,8 @@
 #include <unordered_map>
 #include "Rig.h"
 #include "Texture.h"
+#include "Block.h"
+#include "Mesh.h"
 
 struct TransformComponent{
     glm::vec3 position = glm::vec3(0.0f);
@@ -24,8 +26,7 @@ struct OpenGLComponent {
 };
 
 struct MeshComponent {
-    std::vector<float> vertices;
-    std::vector<unsigned int> indices;
+    Mesh mesh;
     int rigRef = 0;
 };
 
@@ -63,6 +64,13 @@ struct AABBComponent{
 struct CameraComponent{
     glm::mat4 view;
     glm::mat4 projection;
+};
+
+struct ChunkComponent{
+    int width = 16;
+    int height = 355;
+    Block blocks[16][355][16];
+    int chunkNeighbours[4] = { -1, -1, -1, -1}; //front, back, left right saves the chunks neighbours ids
 };
 
  
