@@ -107,6 +107,7 @@ add_executable(HelloWindow
     src/EngineFiles/ChunkSystem.cpp
     src/EngineFiles/ChunkRenderer.cpp
     src/EngineFiles/WorldGenerator.cpp
+    src/EngineFiles/EngineDebug.cpp
 )
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")

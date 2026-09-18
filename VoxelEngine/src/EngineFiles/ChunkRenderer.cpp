@@ -43,10 +43,11 @@ void ChunkRenderer::Draw(Entity* ent){
     shader->Use();
     shader->setMat4("view", cameraIt.view);
     shader->setMat4("projection", cameraIt.projection);
+    shader->setMat4("model", transformComponent.model);
 
+    
     glBindTexture(GL_TEXTURE_2D, materialComponent.diffuse->GetHandle());
     shader->setInt("diffuseTexture", 0);
-    shader->setMat4("model", transformComponent.model);
     shader->setVec3("color", materialComponent.color);
 
 

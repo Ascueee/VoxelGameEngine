@@ -21,7 +21,7 @@ class Animator{
         Animator();
         static void RunAnimation(Entity* ent, std::string animationName, float deltaTime);
         //This will recusivly go through the entity heirarchy to animate the specific bones relative to the entity transform system
-        static void EvaluateAnimation(Entity* ent, Rig& rig,RigComponent& rigComponent, Animation* animation, float animationTime);
+        static void EvaluateAnimation(Entity* ent, AnimatorComponent& animator, RigComponent& rigComponent, int rootEntity, Animation* animation, float animationTime);
         static Storage* storage;
     private:
 

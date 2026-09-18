@@ -9,3 +9,4 @@ void CameraSystem::ConstructCamera(Entity* ent, glm::vec3 offSet){
     cam.view = glm::lookAt(worldPos, worldPos + trans.front, trans.up);
     cam.projection = glm::perspective(glm::radians(45.0f),(float)1920 / (float)1080, 0.1f, 500.0f);
 }
+
