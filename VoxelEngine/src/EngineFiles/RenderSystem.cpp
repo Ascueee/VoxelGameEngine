@@ -18,7 +18,7 @@ void RenderSystem::Load(Entity* ent){
 
     glBindVertexArray(openGLComponent.vao);
     glBindBuffer(GL_ARRAY_BUFFER, openGLComponent.vbo);
-    glBufferData(GL_ARRAY_BUFFER, meshComponent.mesh.vertices.size() * sizeof(float),meshComponent.mesh.vertices.data(),GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, meshComponent.mesh.vertices.size() * sizeof(float), meshComponent.mesh.vertices.data(),GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, openGLComponent.ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER,meshComponent.mesh.indices.size() * sizeof(unsigned int),meshComponent.mesh.indices.data(), GL_STATIC_DRAW);

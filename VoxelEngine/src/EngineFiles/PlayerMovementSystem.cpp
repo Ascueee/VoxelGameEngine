@@ -5,6 +5,7 @@ PlayerMovementSystem::PlayerMovementSystem(){}
 void PlayerMovementSystem::Move(Entity* ent, Direction dir, float deltaTime){
     TransformComponent& trans = StorageManager::GetStorage()->transformStorage[ent->GetID()];
     PlayerMovement* move = &StorageManager::GetStorage()->playerMovementStorage[ent->GetID()];
+    AABBComponent* aabbComponent = &StorageManager::GetStorage()->AABBStorage[ent->GetID()];
     if(dir == Direction::FORWARD){
         trans.position += trans.front * move->speed * deltaTime;
     }

@@ -7,18 +7,17 @@ void AABBSystem::Init(Storage* newStorage){
 }
 
 //Creates the AABB for the entity
-void AABBSystem::ConstructAABB(Entity* ent, glm::vec3 baseHalfExtents){
-    TransformComponent& transform = storage->transformStorage[ent->GetID()];
-    glm::vec3 halfExtents = baseHalfExtents;
-    AABBComponent& aabb = storage->AABBStorage[ent->GetID()];
+void AABBSystem::ConstructAABB(Entity* ent, glm::vec3 size, glm::vec3 offSet){
+    TransformComponent& transform = StorageManager::GetStorage()->transformStorage[ent->GetID()];
+    AABBComponent& aabb = StorageManager::GetStorage()->AABBStorage[ent->GetID()];
+
+    aabb.offSet = offSet;
     aabb.center = transform.position + aabb.offSet;
-    aabb.halfExtents = halfExtents;
-    aabb.size = halfExtents;
-    aabb.min = aabb.center - halfExtents;
-    aabb.max = aabb.center + halfExtents;
+    aabb.size = size;
+    aabb.halfSize = size * 0.5f;
+    aabb.min = aabb.center - aabb.halfSize;
+    aabb.max = aabb.center + aabb.halfSize;
 }
-
-
 bool AABBSystem::AABBVsAABBCollision(AABBComponent* entOne, AABBComponent* entTwo){
     
     return entOne->min.x <= entTwo->max.x &&
@@ -28,6 +27,7 @@ bool AABBSystem::AABBVsAABBCollision(AABBComponent* entOne, AABBComponent* entTw
     entOne->min.z <= entTwo->max.z &&
     entOne->max.z >= entTwo->min.z;
 }
+
 
 
 

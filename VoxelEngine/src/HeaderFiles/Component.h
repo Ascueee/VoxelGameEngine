@@ -25,6 +25,13 @@ struct OpenGLComponent {
     GLsizei indexCount = 0;
 };
 
+struct DebugGLComponent {
+    GLuint vao = 0;
+    GLuint vbo = 0;
+    GLuint ebo = 0;
+    GLsizei indexCount = 0;
+};
+
 struct MeshComponent {
     Mesh mesh;
     int rigRef = 0;
@@ -54,11 +61,16 @@ struct PlayerMovement{
 
 struct AABBComponent{
     glm::vec3 center = glm::vec3(0,0,0);
-    glm::vec3 offSet = glm::vec3(0,0,0);
     glm::vec3 size = glm::vec3(0,0,0);
-    glm::vec3 halfExtents = glm::vec3(0,0,0);
     glm::vec3 min = glm::vec3(0,0,0);
     glm::vec3 max = glm::vec3(0,0,0);
+    glm::vec3 halfSize = glm::vec3(0,0,0);
+    glm::vec3 offSet = glm::vec3(0,0,0);
+};
+
+struct AABBDebugComponent{
+    std::vector<float> vertices;
+    std::vector<unsigned int> indices;
 };
 
 struct CameraComponent{

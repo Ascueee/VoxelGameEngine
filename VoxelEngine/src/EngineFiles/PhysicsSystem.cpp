@@ -35,11 +35,9 @@ void PhysicsSystem::Run(float deltaTime){
                 break;
             }
         }
-
-
+        
         if(!isColliding){
             transform.position += gravity * deltaTime;
-            AABBSystem::ConstructAABB(currentEntity, entityAABB->halfExtents);
         }
     }    
 

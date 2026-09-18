@@ -6,6 +6,7 @@ Animator::Animator(){}
 void Animator::RunAnimation(Entity* ent, std::string animationName, float deltaTime){
     RigComponent& rigComponent = storage->rigStorage[ent->GetID()];
     AnimatorComponent& animatorComponent = storage->animatorStorage[ent->GetID()];
+    TransformComponent& transform = storage->transformStorage[ent->GetID()];
     //calls a refrence to the rig because it needs to change the bone data(final matrix)
     Rig& rig = rigComponent.rig;
     Animation* currentAnimation = rig.GetAnimation(animationName);
@@ -22,25 +23,28 @@ void Animator::RunAnimation(Entity* ent, std::string animationName, float deltaT
     animatorComponent.currentTime = fmod(animatorComponent.currentTime, currentAnimation->duration);
 
     //std::cout << "Evalutating Animation {" << currentAnimation->name << "}" << std::endl;
-    EvaluateAnimation(ent, rig, rigComponent, currentAnimation, animatorComponent.currentTime);
+    EvaluateAnimation(ent, animatorComponent, rigComponent, ent->GetID(), currentAnimation, animatorComponent.currentTime);
 }
 
-void Animator::EvaluateAnimation(Entity* ent, Rig& rig, RigComponent& rigComponent, Animation* animation, float animationTime){
+void Animator::EvaluateAnimation(Entity* ent, AnimatorComponent& animator, RigComponent& rigComponent, int rootEntity, Animation* animation, float animationTime){
     int entID = ent->GetID();
     int parentID = ent->GetParentID();
-
     glm::mat4 boneLocalMatrix = glm::mat4(1.0f);
+    TransformComponent& transform = storage->transformStorage[ent->GetID()];
 
     //Find if the entity has a name that matches one in the rig
-    if(rig.BoneExist(ent->GetName())){
+    if(rigComponent.rig.BoneExist(ent->GetName())){
         //std::cout << "Animating {" << ent->GetName() << "} " << std::endl;
         //Now that an animation has been found with a bone I need to evalute it
         KeyFrameData keyFrame = animation->keyFrameData[ent->GetName()];
 
-        //Build the bones localMatrix here
-        glm::vec3 position = InterpolatePosition(keyFrame, animationTime);
-        glm::quat rotation = InterpolateRotation(keyFrame, animationTime);
-        glm::vec3 scale = InterpolateScale(keyFrame, animationTime);
+        glm::vec3 position = transform.position;
+        glm::quat rotation = transform.rotation;
+        glm::vec3 scale = transform.scale;
+
+        position = InterpolatePosition(keyFrame, animationTime);
+        rotation = InterpolateRotation(keyFrame, animationTime);
+        scale = InterpolateScale(keyFrame, animationTime);
 
         boneLocalMatrix = glm::translate(boneLocalMatrix, position);
         boneLocalMatrix *= glm::mat4_cast(rotation);
@@ -48,28 +52,34 @@ void Animator::EvaluateAnimation(Entity* ent, Rig& rig, RigComponent& rigCompone
     }
     else{
         //If node doesn't have animation keyframes, fallback to static transform component
-        TransformComponent& t = storage->transformStorage[entID];
-        boneLocalMatrix = glm::translate(boneLocalMatrix, t.position);
-        boneLocalMatrix = glm::rotate(boneLocalMatrix, t.rotation.x, glm::vec3(1,0,0));
-        boneLocalMatrix = glm::rotate(boneLocalMatrix, t.rotation.y, glm::vec3(0,1,0));
-        boneLocalMatrix = glm::rotate(boneLocalMatrix, t.rotation.z, glm::vec3(0,0,1));
-        boneLocalMatrix = glm::scale(boneLocalMatrix, t.scale);
+        boneLocalMatrix = glm::translate(boneLocalMatrix, transform.position);
+        boneLocalMatrix = glm::rotate(boneLocalMatrix, transform.rotation.x, glm::vec3(1,0,0));
+        boneLocalMatrix = glm::rotate(boneLocalMatrix, transform.rotation.y, glm::vec3(0,1,0));
+        boneLocalMatrix = glm::rotate(boneLocalMatrix, transform.rotation.z, glm::vec3(0,0,1));
+        boneLocalMatrix = glm::scale(boneLocalMatrix, transform.scale);
     }
 
     //Now its time to get the bones global Matrix
     glm::mat4 parentGlobalMatrix = glm::mat4(1.0f);
-    if(parentID != -1){
-        parentGlobalMatrix = storage->transformStorage[parentID].model;
+    glm::mat4 boneGlobalMatrix = glm::mat4(1.0f);
+
+    if(parentID == -1){
+        parentGlobalMatrix = transform.model;
+        boneGlobalMatrix = parentGlobalMatrix;
     }
-
-    glm::mat4 boneGlobalMatrix = parentGlobalMatrix * boneLocalMatrix;
-
+    else{
+        parentGlobalMatrix = storage->transformStorage[ent->GetParentID()].model;
+        boneGlobalMatrix = parentGlobalMatrix * boneLocalMatrix;
+    }
     //Store animated global transform so child entities pull the updated parent matrix
-    storage->transformStorage[entID].model = boneGlobalMatrix;
+    transform.model = boneGlobalMatrix;
 
-    if(rig.BoneExist(ent->GetName())){
-        Bone& currentBone = rig.GetBone(ent->GetName());
-        currentBone.finalBoneMatrix = boneGlobalMatrix * currentBone.offSet;
+    if(rigComponent.rig.BoneExist(ent->GetName())){
+        Bone& currentBone = rigComponent.rig.GetBone(ent->GetName());
+            glm::mat4 boneModelMatrix =
+        glm::inverse(storage->transformStorage[rootEntity].model) * boneGlobalMatrix;
+        
+        currentBone.finalBoneMatrix = boneModelMatrix * currentBone.offSet;
 
         if(currentBone.boneID >= 0 && currentBone.boneID < (int)rigComponent.finalBoneMatrices.size()){
             rigComponent.finalBoneMatrices[currentBone.boneID] = currentBone.finalBoneMatrix;
@@ -78,7 +88,8 @@ void Animator::EvaluateAnimation(Entity* ent, Rig& rig, RigComponent& rigCompone
 
     //need to recursivly go through the entities children
     for(int i = 0; i < ent->GetChildren().size(); i++){
-        EvaluateAnimation(&storage->entityStorage[ent->GetChildren()[i]], rig, rigComponent, animation, animationTime);
+        TransformComponent& childTransform = storage->transformStorage[ent->GetChildren()[i]];
+        EvaluateAnimation(&storage->entityStorage[ent->GetChildren()[i]], animator, rigComponent, rootEntity, animation, animationTime);
     }
 }
 
