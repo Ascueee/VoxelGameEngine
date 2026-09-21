@@ -11,6 +11,7 @@ class WorldGenerator{
         WorldGenerator();
         static void GenerateWorld(Entity* cameraEnt, Shader* shader);
         static void RenderWorld(Entity* playerEnt);
+        static Entity* GetChunk(glm::vec3 worldPos);
     private:
         static std::vector<Entity*> chunkEntities;
 

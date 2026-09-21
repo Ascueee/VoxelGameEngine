@@ -1,6 +1,7 @@
 #pragma once
 #include "Storage.h"
 #include "AABBSystem.h"
+#include "WorldGenerator.h"
 #include <vector>
 
 class PhysicsSystem{
