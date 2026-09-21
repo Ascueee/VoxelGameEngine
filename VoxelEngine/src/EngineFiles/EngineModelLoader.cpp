@@ -94,6 +94,17 @@ void EngineModelLoader::ProcessMesh(aiMesh *mesh, const aiScene *scene, ModelNod
             vertices.push_back(0);
             vertices.push_back(0);
         }
+
+        if(mesh->HasNormals()){
+            vertices.push_back(mesh->mNormals[i].x);
+            vertices.push_back(mesh->mNormals[i].y);
+            vertices.push_back(mesh->mNormals[i].z);
+        }
+        else{
+            vertices.push_back(0);
+            vertices.push_back(0);
+        }
+
         //Need to create bone data as default
         vertices.push_back(-1);
         vertices.push_back(-1);
@@ -176,8 +187,8 @@ void EngineModelLoader::ExtractRig(aiMesh* mesh, const aiScene* scene, std::vect
             int vertexId = weights[weightIndex].mVertexId;
             float weight = weights[weightIndex].mWeight;
 
-            int base = vertexId * 13;// 3 position + 2 uvs + 4 boneIDs + 4 weights per vertex
-            int idOffset = base + 5;
+            int base = vertexId * 16;// 3 position + 2 uvs + 3 normals + 4 boneIDs + 4 weights per vertex
+            int idOffset = base + 8;
             int weightOffset = idOffset + 4;
 
             //Adds the updates weights to the vertex data

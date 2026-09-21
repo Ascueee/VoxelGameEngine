@@ -129,7 +129,9 @@ void ChunkSystem::GenerateCubeMesh(MeshComponent& mesh, BlockDirection dir, glm:
     float backFaceUV[] = {0.0f,0.0f, 1.0f,0.0f, 1.0f,1.0f, 1.0f,1.0f, 0.0f,1.0f, 0.0f,0.0f};
     float leftFaceUV[] = {0.0f,0.0f, 1.0f,0.0f, 1.0f,1.0f, 1.0f,1.0f, 0.0f,1.0f, 0.0f,0.0f};
     float rightFaceUV[] = {0.0f,0.0f, 1.0f,0.0f, 1.0f,1.0f, 1.0f,1.0f, 0.0f,1.0f, 0.0f,0.0f};
-    unsigned int baseVertex = mesh.mesh.vertices.size() / 5;
+
+
+    unsigned int baseVertex = mesh.mesh.vertices.size() / 8;
 
     for(int i = 0; i < 6; i++){
         //Needs to loop over the top face get the indices and add it to the chunk mesh
@@ -143,6 +145,11 @@ void ChunkSystem::GenerateCubeMesh(MeshComponent& mesh, BlockDirection dir, glm:
             //need to add uvs
             mesh.mesh.vertices.push_back(topFaceUV[i * 2]);
             mesh.mesh.vertices.push_back(topFaceUV[i * 2 + 1]);
+
+            //Normals
+            mesh.mesh.vertices.push_back(0.0f);
+            mesh.mesh.vertices.push_back(1.0f);
+            mesh.mesh.vertices.push_back(0.0f);
         }
         else if(dir == BlockDirection::BLOCKBOTTOM){
             mesh.mesh.vertices.push_back(cubeVertices[bottomFace[i] * 3] + blockPos.x);
@@ -152,6 +159,10 @@ void ChunkSystem::GenerateCubeMesh(MeshComponent& mesh, BlockDirection dir, glm:
             //need to add uvs
             mesh.mesh.vertices.push_back(bottomFaceUV[i * 2]);
             mesh.mesh.vertices.push_back(bottomFaceUV[i * 2 + 1]);
+
+            mesh.mesh.vertices.push_back(0.0f);
+            mesh.mesh.vertices.push_back(-1.0f);
+            mesh.mesh.vertices.push_back(0.0f);
         }
         else if(dir == BlockDirection::BLOCKRIGHT){
             mesh.mesh.vertices.push_back(cubeVertices[rightFace[i] * 3] + blockPos.x);
@@ -161,6 +172,11 @@ void ChunkSystem::GenerateCubeMesh(MeshComponent& mesh, BlockDirection dir, glm:
             //need to add uvs
             mesh.mesh.vertices.push_back(rightFaceUV[i * 2]);
             mesh.mesh.vertices.push_back(rightFaceUV[i * 2 + 1]);
+
+
+            mesh.mesh.vertices.push_back(1.0f);
+            mesh.mesh.vertices.push_back(0.0f);
+            mesh.mesh.vertices.push_back(0.0f);
         }
         else if(dir == BlockDirection::BLOCKLEFT){
             mesh.mesh.vertices.push_back(cubeVertices[leftFace[i] * 3] + blockPos.x);
@@ -170,6 +186,10 @@ void ChunkSystem::GenerateCubeMesh(MeshComponent& mesh, BlockDirection dir, glm:
             //need to add uvs
             mesh.mesh.vertices.push_back(leftFaceUV[i * 2]);
             mesh.mesh.vertices.push_back(leftFaceUV[i * 2 + 1]);
+
+            mesh.mesh.vertices.push_back(-1.0f);
+            mesh.mesh.vertices.push_back(0.0f);
+            mesh.mesh.vertices.push_back(0.0f);
         }
         else if(dir == BlockDirection::BLOCKFRONT){
             mesh.mesh.vertices.push_back(cubeVertices[frontFace[i] * 3] + blockPos.x);
@@ -179,6 +199,10 @@ void ChunkSystem::GenerateCubeMesh(MeshComponent& mesh, BlockDirection dir, glm:
             //need to add uvs
             mesh.mesh.vertices.push_back(frontFaceUV[i * 2]);
             mesh.mesh.vertices.push_back(frontFaceUV[i * 2 + 1]);
+
+            mesh.mesh.vertices.push_back(0.0f);
+            mesh.mesh.vertices.push_back(0.0f);
+            mesh.mesh.vertices.push_back(1.0f);
         }
         else if(dir == BlockDirection::BLOCKBACK){
             mesh.mesh.vertices.push_back(cubeVertices[backFace[i] * 3] + blockPos.x);
@@ -188,6 +212,10 @@ void ChunkSystem::GenerateCubeMesh(MeshComponent& mesh, BlockDirection dir, glm:
             //need to add uvs
             mesh.mesh.vertices.push_back(backFaceUV[i * 2]);
             mesh.mesh.vertices.push_back(backFaceUV[i * 2 + 1]);
+
+            mesh.mesh.vertices.push_back(0.0f);
+            mesh.mesh.vertices.push_back(0.0f);
+            mesh.mesh.vertices.push_back(-1.0f);
         }
     }
 
