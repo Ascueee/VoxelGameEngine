@@ -1,2 +1,2 @@
 # VoxelGameEngine
-Lighteight simple c++ voxel game engine
+Lightweight c++ voxel game engine
