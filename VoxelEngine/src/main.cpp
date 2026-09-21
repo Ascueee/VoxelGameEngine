@@ -140,7 +140,7 @@ int main()
         TransformSystem::Update(StorageManager::GetEntityById(walkingRootEntity->GetID()));
         TransformSystem::Update(StorageManager::GetEntityById(cameraEnt->GetID()));
 
-        CameraSystem::ConstructCamera(StorageManager::GetEntityById(cameraEnt->GetID()), glm::vec3(0, 2.0f, -10.0));
+        CameraSystem::ConstructCamera(StorageManager::GetEntityById(cameraEnt->GetID()), glm::vec3(0, 2.0f, 0.0));
         StorageManager::GetStorage()->transformStorage[cameraEnt->GetID()].position = StorageManager::GetStorage()->transformStorage[walkingRootEntity->GetID()].position;
 
         Animator::RunAnimation(StorageManager::GetEntityById(walkingRootEntity->GetID()), "mixamo.com", deltaTime);
