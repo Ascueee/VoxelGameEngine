@@ -66,12 +66,12 @@ void PhysicsSystem::Run(float deltaTime){
                     //Then I can construct the blockAABB using the blocks world pos
                     //Construct an AABB for the block that has a scale of 1
                     glm::vec3 blockWorldPos = glm::vec3(blockX, blockY - 1, blockZ) + chunkTransform->position;
-                    std::cout << "blockWoldPos Position:" << blockWorldPos.x << ", " <<blockWorldPos.y << ", " << blockWorldPos.z << std::endl;
+                    //std::cout << "blockWoldPos Position:" << blockWorldPos.x << ", " <<blockWorldPos.y << ", " << blockWorldPos.z << std::endl;
                     AABBComponent blockAABB = AABBSystem::ConstructBlockAABB(blockWorldPos);
 
                     if(AABBSystem::AABBVsAABBCollision(entityAABB, &blockAABB)){
                         isColliding = true;
-                        std::cout << "Entity AABB is colliding with terrain" << std::endl;
+                        //std::cout << "Entity AABB is colliding with terrain" << std::endl;
                         AABBSystem::ConstructAABB(currentEntity, entityAABB->size, entityAABB->offSet);
                     }
                 }

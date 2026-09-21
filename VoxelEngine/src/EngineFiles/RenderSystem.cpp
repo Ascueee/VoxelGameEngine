@@ -23,17 +23,21 @@ void RenderSystem::Load(Entity* ent){
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, openGLComponent.ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER,meshComponent.mesh.indices.size() * sizeof(unsigned int),meshComponent.mesh.indices.data(), GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 13 * sizeof(float), (void*)0);
+    //position = 3, uv = 2, normals = 3, bone ids = 4, bone weights = 4, stride = 16
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 13 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 13 * sizeof(float), (void*)(5 * sizeof(float)));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (void*)(5 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
-     glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 13 * sizeof(float), (void*)(9 * sizeof(float)));
+    glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (void*)(8 * sizeof(float)));
     glEnableVertexAttribArray(3);
+
+     glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (void*)(12 * sizeof(float)));
+    glEnableVertexAttribArray(4);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0); 
@@ -68,6 +72,9 @@ void RenderSystem::Draw(Entity* ent){
     shader->setInt("diffuseTexture", 0);
     shader->setMat4("model", transformComponent.model);
     shader->setVec3("color", materialComponent.color);
+
+    shader->setVec3("lightPos", glm::vec3(0.0f, 100.0f, 0.0f));
+    shader->setVec3("lightColor", glm::vec3(1,1,1));
 
     if (rigIt != storage->rigStorage.end() && !rigIt->second.finalBoneMatrices.empty()) {
         shader->setMat4Array("finalBonesMatrices", rigIt->second.finalBoneMatrices);

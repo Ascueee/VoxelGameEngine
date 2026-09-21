@@ -88,7 +88,18 @@ int main()
     StorageManager::GetStorage()->physicsStorage.emplace(walkingRootEntity->GetID(), modelPhys);
     StorageManager::GetStorage()->debugGLStorage.emplace(walkingRootEntity->GetID(), debugGLRoot);
 
+    Entity* dropKick = StorageManager::BuildModel(EngineModelLoader::GetModel("Drop Kick"));
+    StorageManager::GetStorage()->transformStorage[dropKick->GetID()].scale = glm::vec3(0.01f);
+    StorageManager::GetStorage()->transformStorage[dropKick->GetID()].position = glm::vec3(106,15,100);
+    StorageManager::GetStorage()->materialStorage[dropKick->GetID() + 1].color = glm::vec3(1,1,1);
+    StorageManager::GetStorage()->materialStorage[dropKick->GetID() + 1].diffuse = EngineTextureLoader::GetTexture("Brick");
+    PhysicsComponent modelDropKickPhys;
+    DebugGLComponent debugGLDropKick;
+    StorageManager::GetStorage()->physicsStorage.emplace(dropKick->GetID(), modelDropKickPhys);
+    StorageManager::GetStorage()->debugGLStorage.emplace(dropKick->GetID(), debugGLDropKick);
+
     AABBSystem::ConstructAABB(StorageManager::GetEntityById(walkingRootEntity->GetID()), glm::vec3(0.8,1.7,0.8), glm::vec3(0,0.8,0));
+    AABBSystem::ConstructAABB(StorageManager::GetEntityById(dropKick->GetID()), glm::vec3(0.8,1.7,0.8), glm::vec3(0,0.8,0));
     AABBSystem::ConstructAABB(StorageManager::GetEntityById(testCube->GetID()), glm::vec3(1,1,1));
 
     Entity* cameraEnt = StorageManager::CreateCameraEntity();
@@ -104,12 +115,15 @@ int main()
     //Adds entities to physics system
     PhysicsSystem::Add(StorageManager::GetEntityById(walkingRootEntity->GetID()));
     PhysicsSystem::Add(StorageManager::GetEntityById(testCube->GetID()));
+    PhysicsSystem::Add(StorageManager::GetEntityById(dropKick->GetID()));
 
     //Loads entities into the renderer
     RenderSystem::Load(StorageManager::GetEntityById(testCube->GetID()));
     RenderSystem::Load(StorageManager::GetEntityById(walkingRootEntity->GetID() + 1));
+    RenderSystem::Load(StorageManager::GetEntityById(dropKick->GetID() + 1));
 
     EngineDebug::Load(walkingRootEntity);
+    EngineDebug::Load(dropKick);
     EngineDebug::Load(testCube);
 
     float deltaTime = 0.0f;
@@ -128,29 +142,36 @@ int main()
             StorageManager::GetStorage()->AABBStorage[walkingRootEntity->GetID()].size,
             StorageManager::GetStorage()->AABBStorage[walkingRootEntity->GetID()].offSet);
 
+        AABBSystem::ConstructAABB(dropKick,
+            StorageManager::GetStorage()->AABBStorage[walkingRootEntity->GetID()].size,
+            StorageManager::GetStorage()->AABBStorage[walkingRootEntity->GetID()].offSet);
+
         AABBSystem::ConstructAABB(testCube,
             StorageManager::GetStorage()->AABBStorage[testCube->GetID()].size,
             StorageManager::GetStorage()->AABBStorage[testCube->GetID()].offSet);
-
 
         processInput(window, walkingRootEntity, deltaTime);
         PhysicsSystem::Run(deltaTime);
 
         TransformSystem::Update(StorageManager::GetEntityById(testCube->GetID()));
         TransformSystem::Update(StorageManager::GetEntityById(walkingRootEntity->GetID()));
+        TransformSystem::Update(StorageManager::GetEntityById(dropKick->GetID()));
         TransformSystem::Update(StorageManager::GetEntityById(cameraEnt->GetID()));
 
-        CameraSystem::ConstructCamera(StorageManager::GetEntityById(cameraEnt->GetID()), glm::vec3(0, 2.0f, 0.0));
+        CameraSystem::ConstructCamera(StorageManager::GetEntityById(cameraEnt->GetID()), glm::vec3(-1, 2.0f, 0.0));
         StorageManager::GetStorage()->transformStorage[cameraEnt->GetID()].position = StorageManager::GetStorage()->transformStorage[walkingRootEntity->GetID()].position;
 
         Animator::RunAnimation(StorageManager::GetEntityById(walkingRootEntity->GetID()), "mixamo.com", deltaTime);
+        Animator::RunAnimation(StorageManager::GetEntityById(dropKick->GetID()), "mixamo.com", deltaTime);
 
         WorldGenerator::RenderWorld(StorageManager::GetEntityById(walkingRootEntity->GetID()));
         RenderSystem::Draw(StorageManager::GetEntityById(testCube->GetID()));
         RenderSystem::Draw(StorageManager::GetEntityById(walkingRootEntity->GetID() + 1));
+        RenderSystem::Draw(StorageManager::GetEntityById(dropKick->GetID() + 1));
 
         EngineDebug::Draw(walkingRootEntity);
         EngineDebug::Draw(testCube);
+        EngineDebug::Draw(dropKick);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
