@@ -73,5 +73,13 @@ void WorldGenerator::RenderWorld(Entity* playerEnt){
             ChunkRenderer::Draw(chunkEntities[chunkIndex]);
         }
     }
-
 }
+
+
+Entity* WorldGenerator::GetChunk(glm::vec3 worldPos){
+    int voxelWorldPosX = worldPos.x / 16;
+    int voxelWorldPosZ = worldPos.z / 16;
+
+    return chunkEntities[33 * voxelWorldPosX + voxelWorldPosZ];
+}
+

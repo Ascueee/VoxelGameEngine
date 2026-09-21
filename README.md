@@ -1,2 +1,2 @@
-# CPPEngine
-c++ Game Engine
+# VoxelGameEngine
+Lighteight simple c++ voxel game engine
