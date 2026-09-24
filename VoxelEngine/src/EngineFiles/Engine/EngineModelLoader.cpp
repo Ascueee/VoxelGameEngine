@@ -42,7 +42,7 @@ void EngineModelLoader::ProcessNode(aiNode *node, const aiScene *scene, int pare
     modelNode.parentId = parentID;
     modelNode.nodeName = node->mName.C_Str();
 
-    std::cout << "Processing Node {" << modelNode.nodeName << "}" << std::endl;
+    //std::cout << "Processing Node {" << modelNode.nodeName << "}" << std::endl;
 
     if(node->mNumMeshes > 0){
         aiMesh* mesh = scene->mMeshes[node->mMeshes[0]];
@@ -171,7 +171,7 @@ void EngineModelLoader::ExtractRig(aiMesh* mesh, const aiScene* scene, std::vect
                 aiMat.a3, aiMat.b3, aiMat.c3, aiMat.d3,
                 aiMat.a4, aiMat.b4, aiMat.c4, aiMat.d4
             );
-            std::cout << "Added Bone {" << boneName << "}" << std::endl;
+            //std::cout << "Added Bone {" << boneName << "}" << std::endl;
             modelRig.AddBone(boneName, newBone);
             boneID = newBone.boneID;
             modelRig.boneCounter++;
@@ -209,11 +209,11 @@ void EngineModelLoader::ProcessAnimation(const aiScene *scene, Model* model){
     for(int i = 0; i < scene->mNumAnimations; i++){
         aiAnimation* animation = scene->mAnimations[i];
         Animation newAnimation;
-        std::cout << "Loading Animation {" << animation->mName.C_Str() << "}, ";
-        std::cout << "Animation Duration {" << animation->mDuration << "}, ";
-        std::cout << "Animation TicksPerSecond {" << animation->mTicksPerSecond << "}, ";
-        std::cout << "Animation Channels {" << animation->mNumChannels << "}" << std::endl;
-        std::cout << " Number of Bones in Rig  { " << model->GetRig().boneCounter << "}" << std::endl;
+        //std::cout << "Loading Animation {" << animation->mName.C_Str() << "}, ";
+        //std::cout << "Animation Duration {" << animation->mDuration << "}, ";
+        //std::cout << "Animation TicksPerSecond {" << animation->mTicksPerSecond << "}, ";
+        //std::cout << "Animation Channels {" << animation->mNumChannels << "}" << std::endl;
+        //std::cout << " Number of Bones in Rig  { " << model->GetRig().boneCounter << "}" << std::endl;
         newAnimation.name = animation->mName.C_Str();
         newAnimation.duration = animation->mDuration;
         newAnimation.ticksPerSecond = animation->mTicksPerSecond;
@@ -222,10 +222,10 @@ void EngineModelLoader::ProcessAnimation(const aiScene *scene, Model* model){
         for(int j = 0; j < animation->mNumChannels; j++){
             KeyFrameData keyFrame;
             aiNodeAnim* channel = animation->mChannels[j];
-            std::cout << "Current Channel {" << channel->mNodeName.C_Str() << "}, ";
-            std::cout << "Position Keys {" << channel->mNumPositionKeys << "}, ";
-            std::cout << "RotationKeys {" << channel->mNumRotationKeys << "}, ";
-            std::cout << "ScaleKeys {" << channel->mNumScalingKeys << "}" << std::endl;
+            //std::cout << "Current Channel {" << channel->mNodeName.C_Str() << "}, ";
+            //std::cout << "Position Keys {" << channel->mNumPositionKeys << "}, ";
+            //std::cout << "RotationKeys {" << channel->mNumRotationKeys << "}, ";
+            //std::cout << "ScaleKeys {" << channel->mNumScalingKeys << "}" << std::endl;
 
             //Extracts keyframe data
             for(int posKeyIndex = 0; posKeyIndex < channel->mNumPositionKeys; posKeyIndex++){

@@ -1,4 +1,11 @@
 #include "WorldGenerator.h"
+//The world will be made up of Islands/Continents
+//There will be a noise level for islandness/continentalness
+//If islandness is high a small island will form
+//if continentalness is high then a large landmass will be created
+//Then there will be biomes layered on top
+
+//with noise values that are related to temp/wetness
 
 std::vector<Entity*> WorldGenerator::chunkEntities;
 WorldGenerator::WorldGenerator(){}
@@ -55,8 +62,8 @@ void WorldGenerator::RenderWorld(Entity* playerEnt){
     //then need to get the chunk entities surrounding the translated x and y and only render those
     //The radius depends on the render distance
     TransformComponent& trans = StorageManager::GetStorage()->transformStorage[playerEnt->GetID()];
-    int voxelWorldPosX = trans.position.x / 16;
-    int voxelWorldPosZ = trans.position.z / 16;
+    int voxelWorldPosX = static_cast<int>(std::floor(trans.position.x / 16.0f));
+    int voxelWorldPosZ = static_cast<int>(std::floor(trans.position.z / 16.0f));
     int renderDistence = 16;
 
     //Renders only the chunks in the reder distance
@@ -64,10 +71,13 @@ void WorldGenerator::RenderWorld(Entity* playerEnt){
     for(int x = -renderDistence; x <= renderDistence; x++){
         for(int z = -renderDistence; z <= renderDistence; z++){
             
-            int chunkIndex = 33 * (voxelWorldPosX + x) + (voxelWorldPosZ + z);
-
-            if(chunkIndex < 0 || chunkIndex > chunkEntities.size())
+            int chunkX = voxelWorldPosX + x;
+            int chunkZ = voxelWorldPosZ + z;
+            if (chunkX < 0 || chunkX >= 33 || chunkZ < 0 || chunkZ >= 33){
                 continue;
+            }
+            
+            int chunkIndex = 33 * chunkX + chunkZ;
 
             TransformSystem::Update(chunkEntities[chunkIndex]);
             ChunkRenderer::Draw(chunkEntities[chunkIndex]);

@@ -5,6 +5,7 @@
 #include "StorageManager.h"
 #include "EngineModelLoader.h"
 #include "EngineTextureLoader.h"
+#include "EngineBiomeLoader.h"
 #include "Animator.h"
 #include "RenderSystem.h"
 #include "TransformSystem.h"
@@ -51,9 +52,13 @@ int main()
     }
 
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
   
     EngineModelLoader::Load();
     EngineTextureLoader::Load();
+    EngineBiomeLoader::Load();
 
     TransformSystem::Init(StorageManager::GetStorage());
     Animator::storage = StorageManager::GetStorage();
@@ -71,7 +76,7 @@ int main()
     Entity* testCube = StorageManager::CreateCubeEntity();
     StorageManager::GetStorage()->materialStorage[testCube->GetID()].color = glm::vec3(1,1,1);
     StorageManager::GetStorage()->materialStorage[testCube->GetID()].diffuse = EngineTextureLoader::GetTexture("Grass");
-    StorageManager::GetStorage()->transformStorage[testCube->GetID()].position = glm::vec3(100,15,100);
+    StorageManager::GetStorage()->transformStorage[testCube->GetID()].position = glm::vec3(100,100,100);
     StorageManager::GetStorage()->transformStorage[testCube->GetID()].scale = glm::vec3(1,1,1);
     PhysicsComponent testBoxPhys;
     DebugGLComponent debugTestGL;
@@ -80,7 +85,7 @@ int main()
 
     Entity* walkingRootEntity = StorageManager::BuildModel(EngineModelLoader::GetModel("Walking"));
     StorageManager::GetStorage()->transformStorage[walkingRootEntity->GetID()].scale = glm::vec3(0.01f);
-    StorageManager::GetStorage()->transformStorage[walkingRootEntity->GetID()].position = glm::vec3(100,15,100);
+    StorageManager::GetStorage()->transformStorage[walkingRootEntity->GetID()].position = glm::vec3(100,100,100);
     StorageManager::GetStorage()->materialStorage[walkingRootEntity->GetID() + 1].color = glm::vec3(1,1,1);
     StorageManager::GetStorage()->materialStorage[walkingRootEntity->GetID() + 1].diffuse = EngineTextureLoader::GetTexture("Grass");
     PhysicsComponent modelPhys;
@@ -90,7 +95,7 @@ int main()
 
     Entity* dropKick = StorageManager::BuildModel(EngineModelLoader::GetModel("Drop Kick"));
     StorageManager::GetStorage()->transformStorage[dropKick->GetID()].scale = glm::vec3(0.01f);
-    StorageManager::GetStorage()->transformStorage[dropKick->GetID()].position = glm::vec3(106,15,100);
+    StorageManager::GetStorage()->transformStorage[dropKick->GetID()].position = glm::vec3(106,100,100);
     StorageManager::GetStorage()->materialStorage[dropKick->GetID() + 1].color = glm::vec3(1,1,1);
     StorageManager::GetStorage()->materialStorage[dropKick->GetID() + 1].diffuse = EngineTextureLoader::GetTexture("Brick");
     PhysicsComponent modelDropKickPhys;
@@ -135,7 +140,7 @@ int main()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(0.53f, 0.81f, 0.92f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         AABBSystem::ConstructAABB(walkingRootEntity,
@@ -158,7 +163,7 @@ int main()
         TransformSystem::Update(StorageManager::GetEntityById(dropKick->GetID()));
         TransformSystem::Update(StorageManager::GetEntityById(cameraEnt->GetID()));
 
-        CameraSystem::ConstructCamera(StorageManager::GetEntityById(cameraEnt->GetID()), glm::vec3(-1, 2.0f, 0.0));
+        CameraSystem::ConstructCamera(StorageManager::GetEntityById(cameraEnt->GetID()), glm::vec3(-1, 1.5f, 0.0));
         StorageManager::GetStorage()->transformStorage[cameraEnt->GetID()].position = StorageManager::GetStorage()->transformStorage[walkingRootEntity->GetID()].position;
 
         Animator::RunAnimation(StorageManager::GetEntityById(walkingRootEntity->GetID()), "mixamo.com", deltaTime);

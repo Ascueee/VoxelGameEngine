@@ -59,6 +59,7 @@ void PhysicsSystem::Run(float deltaTime){
             if(blockX < 16 && blockZ < 16 && blockY < 355){
                 //Need to get a block it will be a cube like radius so the current AABB can be hit by 
                 Block belowBlock = chunkComponent.blocks[blockX][blockY - 1][blockZ];
+                Block infrontBlock = chunkComponent.blocks[blockX][blockY][blockZ - 1];
 
                 if(belowBlock.blockID != 0){
 
