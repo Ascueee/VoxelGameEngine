@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <cmath>
 #include "StorageManager.h"
 #include "ChunkSystem.h"
 #include "ChunkRenderer.h"

@@ -89,25 +89,28 @@ add_executable(HelloWindow
     src/main.cpp
 
     # Engine
-    src/EngineFiles/Entity.cpp
-    src/EngineFiles/StorageManager.cpp
-    src/EngineFiles/Model.cpp
-    src/EngineFiles/Texture.cpp
-    src/EngineFiles/Rig.cpp
-    src/EngineFiles/EngineModelLoader.cpp
-    src/EngineFiles/EngineTextureLoader.cpp
-    src/EngineFiles/Shader.cpp
-    src/EngineFiles/Animator.cpp
-    src/EngineFiles/RenderSystem.cpp
-    src/EngineFiles/TransformSystem.cpp
-    src/EngineFiles/AABBSystem.cpp
-    src/EngineFiles/PhysicsSystem.cpp
-    src/EngineFiles/CameraSystem.cpp
-    src/EngineFiles/PlayerMovementSystem.cpp
-    src/EngineFiles/ChunkSystem.cpp
-    src/EngineFiles/ChunkRenderer.cpp
-    src/EngineFiles/WorldGenerator.cpp
-    src/EngineFiles/EngineDebug.cpp
+    src/EngineFiles/Engine/Entity.cpp
+    src/EngineFiles/Engine/StorageManager.cpp
+    src/EngineFiles/RenderStuff/Model.cpp
+    src/EngineFiles/RenderStuff/Texture.cpp
+    src/EngineFiles/RenderStuff/Rig.cpp
+    src/EngineFiles/Engine/EngineModelLoader.cpp
+    src/EngineFiles/Engine/EngineTextureLoader.cpp
+    src/EngineFiles/Engine/EngineBiomeLoader.cpp
+    src/EngineFiles/RenderStuff/Shader.cpp
+    src/EngineFiles/RenderStuff/Animator.cpp
+    src/EngineFiles/RenderStuff/RenderSystem.cpp
+    src/EngineFiles/Engine/TransformSystem.cpp
+    src/EngineFiles/PhysicsStuff/AABBSystem.cpp
+    src/EngineFiles/PhysicsStuff/PhysicsSystem.cpp
+    src/EngineFiles/Engine/CameraSystem.cpp
+    src/EngineFiles/Engine/PlayerMovementSystem.cpp
+    src/EngineFiles/Engine/ChunkSystem.cpp
+    src/EngineFiles/RenderStuff/ChunkRenderer.cpp
+    src/EngineFiles/Engine/WorldGenerator.cpp
+    src/EngineFiles/Engine/EngineDebug.cpp
+
+    libs/fastnoise/FastNoise.cpp
 )
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
