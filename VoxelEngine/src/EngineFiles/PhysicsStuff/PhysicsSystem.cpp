@@ -2,7 +2,7 @@
 
 Storage* PhysicsSystem::storage;
 std::vector<Entity*> PhysicsSystem::entities;
-glm::vec3 PhysicsSystem::gravity = glm::vec3(0.0f, -1.0f, 0.0f);
+glm::vec3 PhysicsSystem::gravity = glm::vec3(0.0f, -0.03f, 0.0f);
 
 void PhysicsSystem::Add(Entity* ent){
     entities.push_back(ent);
@@ -23,8 +23,6 @@ void PhysicsSystem::Run(float deltaTime){
         if(physicsComponent.isStatic == true)
             continue;
         
-        
-         
         bool isColliding = false;
 
         for(int j = 0; j < entities.size(); j++){
@@ -56,7 +54,8 @@ void PhysicsSystem::Run(float deltaTime){
             int blockY = static_cast<int>(transform.position.y + entityAABB->offSet.y) ;
             int blockZ = ((static_cast<int>(std::floor(transform.position.z)) % 16) + 16) % 16;
             
-            if(blockX < 16 && blockZ < 16 && blockY < 355){
+            if(blockX >= 0 && blockX < 16 && blockY >= 1 && blockY < 355 &&blockZ >= 1 && blockZ < 16){
+                //TODO: MEMORY LEAK HERE FIX IT
                 //Need to get a block it will be a cube like radius so the current AABB can be hit by 
                 Block belowBlock = chunkComponent.blocks[blockX][blockY - 1][blockZ];
                 Block infrontBlock = chunkComponent.blocks[blockX][blockY][blockZ - 1];
@@ -84,8 +83,13 @@ void PhysicsSystem::Run(float deltaTime){
         }
         
         if(!isColliding){
-            transform.position += gravity * deltaTime;
+            physicsComponent.velocity += gravity * deltaTime;
         }
+        else{
+            physicsComponent.velocity = glm::vec3(0,0,0);
+        }
+
+        transform.position += physicsComponent.velocity;
     }    
 }
 

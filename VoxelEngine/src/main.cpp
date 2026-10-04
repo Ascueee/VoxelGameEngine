@@ -43,6 +43,7 @@ int main()
         return -1;
     }
     glfwMakeContextCurrent(window);
+    glfwSwapInterval(1);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -85,7 +86,7 @@ int main()
 
     Entity* walkingRootEntity = StorageManager::BuildModel(EngineModelLoader::GetModel("Walking"));
     StorageManager::GetStorage()->transformStorage[walkingRootEntity->GetID()].scale = glm::vec3(0.01f);
-    StorageManager::GetStorage()->transformStorage[walkingRootEntity->GetID()].position = glm::vec3(100,100,100);
+    StorageManager::GetStorage()->transformStorage[walkingRootEntity->GetID()].position = glm::vec3(100,200,100);
     StorageManager::GetStorage()->materialStorage[walkingRootEntity->GetID() + 1].color = glm::vec3(1,1,1);
     StorageManager::GetStorage()->materialStorage[walkingRootEntity->GetID() + 1].diffuse = EngineTextureLoader::GetTexture("Grass");
     PhysicsComponent modelPhys;
@@ -133,6 +134,7 @@ int main()
 
     float deltaTime = 0.0f;
     float lastFrame = 0.0f;
+    int frameCount = 0; 
 
     while (!glfwWindowShouldClose(window))
     {
@@ -156,6 +158,7 @@ int main()
             StorageManager::GetStorage()->AABBStorage[testCube->GetID()].offSet);
 
         processInput(window, walkingRootEntity, deltaTime);
+
         PhysicsSystem::Run(deltaTime);
 
         TransformSystem::Update(StorageManager::GetEntityById(testCube->GetID()));
@@ -180,6 +183,8 @@ int main()
 
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+        frameCount++;
     }
 
     glfwTerminate();

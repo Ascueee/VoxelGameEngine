@@ -1,7 +1,7 @@
 {
     "name": "Plains",
-    "islandsAndContinents": 60,
-    "mountainess": 100,
-    "errosian": 70
+    "islandsAndContinents": 50,
+    "mountainess": 80,
+    "errosian": 100
 
 }

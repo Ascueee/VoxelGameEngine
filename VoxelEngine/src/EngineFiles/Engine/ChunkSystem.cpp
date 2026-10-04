@@ -31,8 +31,6 @@ void ChunkSystem::BuildGrid(ChunkComponent& chunk, glm::vec2 chunkWorldPos){
     //lower values will be oceans/small islands medium will be islands and large values will be continents
     //then there will be mountainess which determines its how mountainess the terrain is
     //then errosion which will smoothen out the mountains or make them sharp
-
-
     //Then the biome will get the specific values from the biome search to alter the terrain, decorations, etc.
     Biome* chunkBiome = EngineBiomeLoader::GetBiome("Plains");
 
@@ -49,7 +47,7 @@ void ChunkSystem::BuildGrid(ChunkComponent& chunk, glm::vec2 chunkWorldPos){
                 float mountainValue = mountainess.GetNoise(static_cast<float>(worldX), static_cast<float>(worldZ));
                 float errosianNoise = errosian.GetNoise(static_cast<float>(worldX), static_cast<float>(worldZ));
 
-                int terrainHeight = 40 + static_cast<int>(islandsAndContinentsNoise * chunkBiome->islandsAndContinents) 
+                int terrainHeight = 50 + static_cast<int>(islandsAndContinentsNoise * chunkBiome->islandsAndContinents)
                 + static_cast<int>(mountainValue * chunkBiome->mountainess) + static_cast<int>(errosianNoise * chunkBiome->errosian);
 
                 if(y < terrainHeight)
@@ -85,9 +83,8 @@ void ChunkSystem::BuildMesh(ChunkComponent& chunk, MeshComponent& mesh){
                 }
 
                 if(x + 1 >= chunk.width || !IsBlockSolid(chunk.blocks[x + 1][y][z])){
-                    if(chunk.chunkNeighbours[2] == -1)
-                        return;
-                    //if(chunk.chunkNeighbours[2] == -1)
+                    // if(chunk.chunkNeighbours[2] == -1)
+                    //     continue;
                     ChunkComponent& rightNeighbour = StorageManager::GetStorage()->chunkStorage[chunk.chunkNeighbours[2]];
                     //Need to check the neighbouring chunk to see if there is a block dont render same for left, front, back
                     if(!IsBlockSolid(rightNeighbour.blocks[0][y][z])){
@@ -96,8 +93,8 @@ void ChunkSystem::BuildMesh(ChunkComponent& chunk, MeshComponent& mesh){
                 }
 
                 if(x - 1 < 0 || !IsBlockSolid(chunk.blocks[x - 1][y][z])){
-                    //if(chunk.chunkNeighbours[3] == -1)
-                        //continue;
+                    // if(chunk.chunkNeighbours[3] == -1)
+                    //     continue;
                     ChunkComponent& leftNeighbour = StorageManager::GetStorage()->chunkStorage[chunk.chunkNeighbours[3]];
                     if(!IsBlockSolid(leftNeighbour.blocks[15][y][z])){
                         GenerateCubeMesh(mesh, BlockDirection::BLOCKLEFT, glm::vec3(x,y,z));
@@ -105,8 +102,8 @@ void ChunkSystem::BuildMesh(ChunkComponent& chunk, MeshComponent& mesh){
                 }
 
                 if(z + 1 >= chunk.width || !IsBlockSolid(chunk.blocks[x][y][z + 1])){
-                    //if(chunk.chunkNeighbours[0] == -1)
-                        //continue;
+                    // if(chunk.chunkNeighbours[0] == -1)
+                    //     continue;
                     ChunkComponent& frontNeighbour = StorageManager::GetStorage()->chunkStorage[chunk.chunkNeighbours[0]];
                     if(!IsBlockSolid(frontNeighbour.blocks[x][y][0])){
                         GenerateCubeMesh(mesh, BlockDirection::BLOCKFRONT, glm::vec3(x,y,z));
@@ -114,8 +111,8 @@ void ChunkSystem::BuildMesh(ChunkComponent& chunk, MeshComponent& mesh){
                 }
 
                 if(z - 1 < 0 || !IsBlockSolid(chunk.blocks[x][y][z - 1])){
-                    //if(chunk.chunkNeighbours[1] == -1)
-                        //continue;
+                    // if(chunk.chunkNeighbours[1] == -1)
+                    //     continue;
                     ChunkComponent& backNeighbour = StorageManager::GetStorage()->chunkStorage[chunk.chunkNeighbours[1]];
                     if(!IsBlockSolid(backNeighbour.blocks[x][y][15])){
                         GenerateCubeMesh(mesh, BlockDirection::BLOCKBACK, glm::vec3(x,y,z));

@@ -1,8 +1,8 @@
 #ifndef ASSIMP_REVISION_H_INC
 #define ASSIMP_REVISION_H_INC
 
-#define GitVersion 0xd0012131
-#define GitBranch "Engine/NoiseWorldGeneration"
+#define GitVersion 0x63101b62
+#define GitBranch "Physics/ImpovedPhysics"
 
 #define VER_MAJOR 5
 #define VER_MINOR 4
@@ -16,14 +16,14 @@
 #if (GitVersion == 0)
 #define VER_FILEVERSION_STR         STR(VER_MAJOR) "." STR(VER_MINOR) "." STR(VER_PATCH) "." STR(VER_BUILD)
 #else
-#define VER_FILEVERSION_STR         STR(VER_MAJOR) "." STR(VER_MINOR) "." STR(VER_PATCH) "." STR(VER_BUILD) " (Commit d0012131)"
+#define VER_FILEVERSION_STR         STR(VER_MAJOR) "." STR(VER_MINOR) "." STR(VER_PATCH) "." STR(VER_BUILD) " (Commit 63101b62)"
 #endif
 #define VER_COPYRIGHT_STR           "\xA9 2006-2023"
 
 #ifdef  NDEBUG
 #define VER_ORIGINAL_FILENAME_STR   "libassimp.dll"
 #else
-#define VER_ORIGINAL_FILENAME_STR   "libassimp.dll"
+#define VER_ORIGINAL_FILENAME_STR   "libassimpd.dll"
 #endif //  NDEBUG
 
 #endif // ASSIMP_REVISION_H_INC

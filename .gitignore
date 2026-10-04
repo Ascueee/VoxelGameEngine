@@ -1,27 +1,62 @@
-# Build output
-/build/
-/out/
-/cmake-build-*/
-CMakeFiles/
-CMakeCache.txt
-cmake_install.cmake
-Makefile
+# ==========================================
+# Build Artifacts & Directories
+# ==========================================
+build/
+bin/
+obj/
+out/
+cmake-build-*/
+*.dir/
 
-# IDE / editor
-.vs/
-.vscode/
-*.xcodeproj/
-.idea/
-
-# Compiled binaries
+# Executables & Binaries
+*.a
+*.lib
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+*.out
+*.app
 *.o
 *.obj
-*.exe
-*.dll
-*.so
-*.dylib
 *.pdb
+*.idb
 
-# OS cruft
+# ==========================================
+# Dependencies / Third-party Libraries
+# ==========================================
+# Ignore third-party libraries vendorized under libs/
+libs/*
+
+# Preserve .gitkeep so the empty libs directory stays tracked in Git
+!libs/.gitkeep
+
+# Optional: If you manage libraries as Git Submodules instead of copying source code,
+# comment out 'libs/*' above and track the submodules directly.
+
+# ==========================================
+# IDE & Editor Specific Files
+# ==========================================
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# CLion / JetBrains
+.idea/
+cmake-build-debug/
+cmake-build-release/
+
+# Visual Studio
+.vs/
+*.user
+*.userosv
+*.sln.docstates
+
+# System Files
 .DS_Store
 Thumbs.db
