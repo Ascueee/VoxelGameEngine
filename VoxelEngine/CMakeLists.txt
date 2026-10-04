@@ -1,3 +1,4 @@
+
 cmake_minimum_required(VERSION 3.10)
 
 project(HelloWindow)
@@ -113,19 +114,6 @@ add_executable(HelloWindow
     libs/fastnoise/FastNoise.cpp
 )
 
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-
-    target_compile_options(HelloWindow PRIVATE
-        -fsanitize=address,undefined
-        -fno-omit-frame-pointer
-    )
-
-    target_link_options(HelloWindow PRIVATE
-        -fsanitize=address,undefined
-    )
-
-endif()
-
 
 # ============================================================
 # Include directories
@@ -188,3 +176,4 @@ elseif (WIN32)
     )
 
 endif()
+

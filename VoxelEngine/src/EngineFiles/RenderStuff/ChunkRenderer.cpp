@@ -37,11 +37,11 @@ void ChunkRenderer::Load(Entity* ent){
 }
 
 void ChunkRenderer::Draw(Entity* ent){
-    MeshComponent MeshComponent = StorageManager::GetStorage()->meshStorage[ent->GetID()];
-    OpenGLComponent openGLComponent = StorageManager::GetStorage()->openGLStorage[ent->GetID()];
-    MaterialComponent materialComponent = StorageManager::GetStorage()->materialStorage[ent->GetID()];
-    TransformComponent transformComponent = StorageManager::GetStorage()->transformStorage[ent->GetID()];
-    CameraComponent cameraIt = StorageManager::GetStorage()->cameraStorage[renderCamera];
+    MeshComponent& MeshComponent = StorageManager::GetStorage()->meshStorage[ent->GetID()];
+    OpenGLComponent& openGLComponent = StorageManager::GetStorage()->openGLStorage[ent->GetID()];
+    MaterialComponent& materialComponent = StorageManager::GetStorage()->materialStorage[ent->GetID()];
+    TransformComponent& transformComponent = StorageManager::GetStorage()->transformStorage[ent->GetID()];
+    CameraComponent& cameraIt = StorageManager::GetStorage()->cameraStorage[renderCamera];
     
     shader->Use();
     shader->setMat4("view", cameraIt.view);

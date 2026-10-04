@@ -46,14 +46,7 @@ void RenderSystem::Load(Entity* ent){
 }
 
 void RenderSystem::Draw(Entity* ent){
-    auto meshIt = storage->meshStorage.find(ent->GetID());
-    auto openGLIt = storage->openGLStorage.find(ent->GetID());
-    auto materialIt = storage->materialStorage.find(ent->GetID());
 
-    if (meshIt == storage->meshStorage.end() || openGLIt == storage->openGLStorage.end()) {
-        std::cout << "Couldnt Find Render Componenets on {" <<  ent->GetID() << "}" << std::endl;
-        return;
-    }
 
     auto cameraIt = storage->cameraStorage.find(renderCamera);
     
@@ -61,11 +54,11 @@ void RenderSystem::Draw(Entity* ent){
     shader->setMat4("view", cameraIt->second.view);
     shader->setMat4("projection", cameraIt->second.projection);
 
-    auto rigIt = storage->rigStorage.find(meshIt->second.rigRef);
+    RigComponent& rigIt = storage->rigStorage[ent->GetID()];
 
-    MeshComponent MeshComponent = meshIt->second;
-    OpenGLComponent openGLComponent = openGLIt->second;
-    MaterialComponent materialComponent = materialIt->second;
+    MeshComponent MeshComponent = storage->meshStorage[ent->GetID()];
+    OpenGLComponent openGLComponent = storage->openGLStorage[ent->GetID()];
+    MaterialComponent materialComponent = storage->materialStorage[ent->GetID()];
     TransformComponent transformComponent = storage->transformStorage[ent->GetID()];
 
     glBindTexture(GL_TEXTURE_2D, materialComponent.diffuse->GetHandle());
@@ -76,8 +69,8 @@ void RenderSystem::Draw(Entity* ent){
     shader->setVec3("lightPos", glm::vec3(0.0f, 100.0f, 0.0f));
     shader->setVec3("lightColor", glm::vec3(1,1,1));
 
-    if (rigIt != storage->rigStorage.end() && !rigIt->second.finalBoneMatrices.empty()) {
-        shader->setMat4Array("finalBonesMatrices", rigIt->second.finalBoneMatrices);
+    if (!rigIt.finalBoneMatrices.empty()) {
+        shader->setMat4Array("finalBonesMatrices", rigIt.finalBoneMatrices);
     }
 
     glBindVertexArray(openGLComponent.vao);

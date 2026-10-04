@@ -64,7 +64,7 @@ void WorldGenerator::RenderWorld(Entity* playerEnt){
     TransformComponent& trans = StorageManager::GetStorage()->transformStorage[playerEnt->GetID()];
     int voxelWorldPosX = static_cast<int>(std::floor(trans.position.x / 16.0f));
     int voxelWorldPosZ = static_cast<int>(std::floor(trans.position.z / 16.0f));
-    int renderDistence = 16;
+    int renderDistence = 2;
 
     //Renders only the chunks in the reder distance
     //The render distance is a sqaure radius that houses the chunks that need to be rendered

@@ -53,6 +53,8 @@ struct AnimatorComponent{
 
 struct PhysicsComponent{
     bool isStatic = false;
+    glm::vec3 velocity = glm::vec3(0,0,0);
+    
 };
 
 struct PlayerMovement{
@@ -81,6 +83,7 @@ struct CameraComponent{
 struct ChunkComponent{
     int width = 16;
     int height = 355;
+    //TODO: make this a list of blocks instead of a 3D vector
     Block blocks[16][355][16];
     int chunkNeighbours[4] = { -1, -1, -1, -1}; //front, back, left right saves the chunks neighbours ids
 };

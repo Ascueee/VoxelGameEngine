@@ -1,0 +1,6 @@
+{
+    "name": "Water",
+    "id": 4,
+    "textureId": 4,
+    "blockType": "Liquid"
+}
