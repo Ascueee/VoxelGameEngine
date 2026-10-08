@@ -1,6 +1,6 @@
 {
     "name": "SandStone",
     "id": 6,
-    "textureId": 5,
+    "textureIds": [5,5,5,5,5,5],
     "blockType": "Solid"
 }

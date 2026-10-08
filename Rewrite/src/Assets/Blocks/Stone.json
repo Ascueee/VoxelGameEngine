@@ -1,6 +1,6 @@
 {
     "name": "Stone",
     "id": 3,
-    "textureId": 2,
+    "textureIds": [2,2,2,2,2,2],
     "blockType": "Solid"
 }

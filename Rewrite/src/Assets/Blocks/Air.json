@@ -1,6 +1,6 @@
 {
     "name": "Air",
     "id": 0,
-    "textureId": 0,
+    "textureIds": [0,0,0,0,0,0],
     "blockType": "Air"
 }

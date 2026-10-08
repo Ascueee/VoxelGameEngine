@@ -5,7 +5,6 @@
 #include <ChunkRenderer.hpp>
 #include <BiomeStorage.hpp>
 #include <filesystem>
-#include <fastnoise/FastNoise.h>
 
 struct Vec3Hash {
     std::size_t operator()(const glm::vec3& v) const {
@@ -28,6 +27,4 @@ class WorldGenerator{
         static int renderDistance;
         static bool firstRun;
         static glm::vec3 lastPosition;
-        static FastNoise tempreture;
-        static FastNoise wetness;
 };

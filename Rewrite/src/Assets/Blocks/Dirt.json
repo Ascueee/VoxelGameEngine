@@ -1,6 +1,6 @@
 {
     "name": "Dirt",
     "id": 1,
-    "textureId": 0,
+    "textureIds": [0,0,0,0,0,0],
     "blockType": "Solid"
 }

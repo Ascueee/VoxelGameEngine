@@ -11,6 +11,7 @@
 #include <BiomeStorage.hpp>
 #include <TextureAtlasStorage.hpp>
 #include <BlockStorage.hpp>
+#include <BlockModelStorage.hpp>
 
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -18,7 +19,7 @@ static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 void processInput(GLFWwindow *window, Camera& cam){
-    const float cameraSpeed = 0.05f; // adjust accordingly
+    const float cameraSpeed = 0.5f; // adjust accordingly
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         cam.SetPosition(cam.GetPosition() + cameraSpeed * cam.GetFront());
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -30,6 +31,9 @@ void processInput(GLFWwindow *window, Camera& cam){
 
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
         cam.SetPosition(cam.GetPosition() + cameraSpeed * cam.GetUp());
+
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+        cam.SetPosition(cam.GetPosition() - cameraSpeed * cam.GetUp());
 }
 
 int main()
@@ -73,18 +77,20 @@ int main()
         return -1;
     }
     glEnable(GL_DEPTH_TEST);
-    Camera camera = Camera(glm::vec3(0,90, 0));
+    Camera camera = Camera(glm::vec3(0,400, 0));
 
     ChunkRenderer::Load(&camera);
     BiomeStorage::Load();
     TextureAtlasStorage::Load();
     BlockStorage::Load();
+    BlockModelStorage::Load();
 
     Entity player = Entity("Player");
     player.Load();
     player.Update();
 
-    WorldGenerator::GenerateWorld(camera.GetPosition());
+    //divides the camera position by blockSize to keep the position consistant with the world
+    WorldGenerator::GenerateWorld(camera.GetPosition() / 4.0f);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -95,7 +101,7 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         processInput(window, camera);
-        WorldGenerator::RenderWorld(camera.GetPosition());
+        WorldGenerator::RenderWorld(camera.GetPosition() / 4.0f);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

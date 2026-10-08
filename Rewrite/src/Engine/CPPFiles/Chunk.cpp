@@ -2,9 +2,8 @@
 
 Chunk::Chunk(){}
 
-Chunk::Chunk(glm::vec3 position, Biome* biome){
+Chunk::Chunk(glm::vec3 position){
     this->position = position;
-    this->biome = biome;
     blocks.resize(width * height * width, (ushort)BlockStorage::GetBlock(0)->GetId());
     islandness.SetNoiseType(FastNoise::Perlin);
     islandness.SetSeed(12345);
@@ -12,11 +11,21 @@ Chunk::Chunk(glm::vec3 position, Biome* biome){
 
     mountainess.SetNoiseType(FastNoise::Perlin);
     mountainess.SetSeed(12345 + 300);
-    mountainess.SetFrequency(0.1f);  
+    mountainess.SetFrequency(0.1f);
+
+    tempreture.SetNoiseType(FastNoise::Perlin);
+    tempreture.SetSeed(12345 + 500);
+    tempreture.SetFrequency(0.001f); 
+    
+    wetness.SetNoiseType(FastNoise::Perlin);
+    wetness.SetSeed(12345 + 800);
+    wetness.SetFrequency(0.001f);  
 }
 
 void Chunk::BuildChunk(glm::vec3 pos){
-    
+    Biome* previousBiome;
+    int previousHeight;
+
     for(int i = 0; i < blocks.size(); i++){
         int x = i % width;
         int y = i / (width * width);
@@ -25,16 +34,66 @@ void Chunk::BuildChunk(glm::vec3 pos){
         int worldX = position.x + x;
         int worldZ = position.z + z;
 
-        float islandnessNoise = islandness.GetNoise(static_cast<float>(worldX), static_cast<float>(worldZ));
-        float mountainNoise = islandness.GetNoise(static_cast<float>(worldX), static_cast<float>(worldZ));
 
+        float islandnessNoise = islandness.GetNoise(worldX, worldZ);
+        float mountainNoise = mountainess.GetNoise(worldX, worldZ);
+        float tempretureNoise = (tempreture.GetNoise(worldX, worldZ));
+        float wetnessNoise = (wetness.GetNoise(worldX, worldZ));
+
+        biome = BiomeStorage::GetBiomeByTempAndWetness(glm::vec2(tempretureNoise, wetnessNoise));
+
+        //Need to fetch the biomes of the surrounding blocks
+        //then need to blend between the biomes that differ
+        Biome* leftBlockBiome =
+            BiomeStorage::GetBiomeByTempAndWetness(glm::vec2(tempreture.GetNoise(worldX - 1, worldZ),
+             wetness.GetNoise(worldX - 1, worldZ)));
+        Biome* rightBlockBiome =
+            BiomeStorage::GetBiomeByTempAndWetness(glm::vec2(tempreture.GetNoise(worldX + 1, worldZ),
+             wetness.GetNoise(worldX + 1, worldZ)));
+        Biome* frontBlockBiome =
+            BiomeStorage::GetBiomeByTempAndWetness(glm::vec2(tempreture.GetNoise(worldX, worldZ + 1), 
+            wetness.GetNoise(worldX, worldZ + 1)));
+        Biome* backBlockBiome =
+            BiomeStorage::GetBiomeByTempAndWetness(glm::vec2(tempreture.GetNoise(worldX, worldZ - 1),
+             wetness.GetNoise(worldX, worldZ - 1)));
         int terrainHeight = 50 + static_cast<int>(islandnessNoise * biome->GetIslandness()) + static_cast<int>(mountainNoise * 15);
+
+        if(leftBlockBiome->GetName() != biome->GetName()){
+            int leftBiomeHeight = 
+                50 + static_cast<int>(islandness.GetNoise(worldX - 1, worldZ) * leftBlockBiome->GetIslandness()) 
+                + static_cast<int>(mountainess.GetNoise(worldX - 1, worldZ) * 15);
+                terrainHeight = glm::mix(terrainHeight, leftBiomeHeight, 0.9f);
+        }
+
+        if(rightBlockBiome->GetName() != biome->GetName()){
+            int rightBiomeHeight = 
+                50 + static_cast<int>(islandness.GetNoise(worldX + 1, worldZ) * rightBlockBiome->GetIslandness())
+                 + static_cast<int>(mountainess.GetNoise(worldX + 1, worldZ) * 15);
+                terrainHeight = glm::mix(terrainHeight, rightBiomeHeight, 0.5f);
+        }
+
+        if(frontBlockBiome->GetName() != biome->GetName()){
+            int frontBiomeHeight = 
+                50 + static_cast<int>(islandness.GetNoise(worldX, worldZ + 1) * frontBlockBiome->GetIslandness())
+                 + static_cast<int>(mountainess.GetNoise(worldX, worldZ + 1) * 15);
+                terrainHeight = glm::mix(terrainHeight, frontBiomeHeight, 0.5f);
+        }
+
+        if(backBlockBiome->GetName() != biome->GetName()){
+            int frontBiomeHeight = 
+                50 + static_cast<int>(islandness.GetNoise(worldX, worldZ - 1) * backBlockBiome->GetIslandness())
+                 + static_cast<int>(mountainess.GetNoise(worldX, worldZ - 1) * 15);
+                terrainHeight = glm::mix(terrainHeight, frontBiomeHeight, 0.5f);
+        }
+
+        //Sets the blocks in the chunk
         if(y <= terrainHeight - 1){
             blocks[i] = (ushort)BlockStorage::GetBlock(biome->GetBlockPallet()[1])->GetId();
         }
         else if(y <= terrainHeight){
             blocks[i] = (ushort)BlockStorage::GetBlock(biome->GetBlockPallet()[0])->GetId();
         }
+
     }
 
     //Water pass for the terrain
@@ -42,9 +101,10 @@ void Chunk::BuildChunk(glm::vec3 pos){
         int y = i / (width * width);
         if(y <= 80 && BlockStorage::GetBlock(blocks[i])->GetType() == BlockType::AIR){
             blocks[i] = (ushort)BlockStorage::GetBlock(4)->GetId();
-            SubscribeBlockEvent(i, BlockEvents::LiquidBlock);
+            //SubscribeBlockEvent(i, BlockEvents::LiquidBlock);
         }
     }
+
 
     SaveChunk();
 }
@@ -53,52 +113,7 @@ void Chunk::BuildMesh(glm::vec3 pos){
     mesh.GetVertices().clear();
     mesh.GetIndices().clear();
 
-    //std::cout << "[Chunk]Building ChunkMesh \n";
     //Vertex Layout: position 3, UVs 2(the uvs represent an index to the vec4 when creating the vertices)
-    float vertices[] = {
-        // TOP (+Y)
-        -0.5f,  0.5f, -0.5f, 0, 1, // 0
-        0.5f,  0.5f, -0.5f, 2, 1, // 1
-        0.5f,  0.5f,  0.5f, 2, 3, // 2
-        -0.5f,  0.5f,  0.5f, 0, 3, // 3
-
-        // BOTTOM (-Y)
-        -0.5f, -0.5f,  0.5f, 0, 1, // 4
-        0.5f, -0.5f,  0.5f, 2, 1, // 5
-        0.5f, -0.5f, -0.5f, 2, 3, // 6
-        -0.5f, -0.5f, -0.5f, 0, 3, // 7
-
-        // FRONT (+Z)
-        -0.5f,  0.5f,  0.5f, 0, 1, // 8
-        0.5f,  0.5f,  0.5f, 2, 1, // 9
-        0.5f, -0.5f,  0.5f, 2, 3, // 10
-        -0.5f, -0.5f,  0.5f, 0, 3, // 11
-
-        // BACK (-Z)
-        0.5f,  0.5f, -0.5f, 0, 1, // 12
-        -0.5f,  0.5f, -0.5f, 2, 1, // 13
-        -0.5f, -0.5f, -0.5f, 2, 3, // 14
-        0.5f, -0.5f, -0.5f, 0, 3, // 15
-
-        // RIGHT (+X)
-        0.5f,  0.5f,  0.5f, 0, 1, // 16
-        0.5f,  0.5f, -0.5f, 2, 1, // 17
-        0.5f, -0.5f, -0.5f, 2, 3, // 18
-        0.5f, -0.5f,  0.5f, 0, 3, // 19
-
-        // LEFT (-X)
-        -0.5f,  0.5f, -0.5f, 0, 1, // 20
-        -0.5f,  0.5f,  0.5f, 2, 1, // 21
-        -0.5f, -0.5f,  0.5f, 2, 3, // 22
-        -0.5f, -0.5f, -0.5f, 0, 3  // 23
-    };
-    unsigned int topFaceIndices[]    = { 0, 3, 2, 2, 1, 0 };
-    unsigned int bottomFaceIndices[] = { 4, 7, 6, 6, 5, 4 };
-    unsigned int frontFaceIndices[]  = { 8, 11, 10, 10, 9, 8 };
-    unsigned int backFaceIndices[]   = { 12, 15, 14, 14, 13, 12 };
-    unsigned int rightFaceIndices[]  = { 16, 19, 18, 18, 17, 16 };
-    unsigned int leftFaceIndices[]   = { 20, 23, 22, 22, 21, 20 };
-
     for(int i = 0; i < blocks.size(); i++){
         int x = i % width;
         int y = i / (width * width);
@@ -118,11 +133,23 @@ void Chunk::BuildMesh(glm::vec3 pos){
             int blockFront = i + width;
             int blockBack  = i - width; 
 
-            //Use a textureAtlas to get the UVS depending on the textureID
-            glm::vec4 textureUVs = TextureAtlasStorage::GetTexture("BaseAtlas")->GetUV(BlockStorage::GetBlock(blocks[i])->GetTextureId());
+            
+            //gets the block model to use in the meshing process
+            BlockMesh* blockMesh = BlockModelStorage::GetBlockModel("Cube.obj");
+            std::vector<float> vertices = blockMesh->GetVertices();
+            std::vector<unsigned int> topFaceIndices = blockMesh->GetFaceIndices("Top");
+            std::vector<unsigned int> bottomFaceIndices = blockMesh->GetFaceIndices("Bottom");
+            std::vector<unsigned int> frontFaceIndices = blockMesh->GetFaceIndices("Front");
+            std::vector<unsigned int> backFaceIndices = blockMesh->GetFaceIndices("Back");
+            std::vector<unsigned int> rightFaceIndices = blockMesh->GetFaceIndices("Right");
+            std::vector<unsigned int> leftFaceIndices = blockMesh->GetFaceIndices("Left");
 
             //Front and Back
             if(y == height - 1 || BlockStorage::GetBlock(blocks[blockAbove])->GetType() == BlockType::AIR){
+                //Use a textureAtlas to get the UVS depending on the textureID
+                glm::vec4 textureUVs = 
+                TextureAtlasStorage::GetTexture("BaseAtlas")->GetUV(BlockStorage::GetBlock(blocks[i])->GetTextureId(BlockFace::TOP));
+
                 unsigned int baseVertex = mesh.GetVertices().size() / 5;
                 //Need to loop over the indices in this case top face indices
                 //Then need to add the vertices to the mesh with the position offset
@@ -131,9 +158,11 @@ void Chunk::BuildMesh(glm::vec3 pos){
                     mesh.GetVertices().push_back(vertices[topFaceIndices[faceIndex] * 5 + 1] + y);
                     mesh.GetVertices().push_back(vertices[topFaceIndices[faceIndex] * 5 + 2] + z);
 
-                    //Add uvs to mesh
-                    mesh.GetVertices().push_back(textureUVs[vertices[topFaceIndices[faceIndex] * 5 + 3]]);
-                    mesh.GetVertices().push_back(textureUVs[vertices[topFaceIndices[faceIndex] * 5 + 4]]);
+                    float uvX = vertices[topFaceIndices[faceIndex] * 5 + 3];
+                    float uvY = vertices[topFaceIndices[faceIndex] * 5 + 4];
+
+                    mesh.GetVertices().push_back(glm::mix(textureUVs.x, textureUVs.z, uvX)); 
+                    mesh.GetVertices().push_back(glm::mix(textureUVs.y, textureUVs.w, uvY));
 
                 }
 
@@ -143,6 +172,8 @@ void Chunk::BuildMesh(glm::vec3 pos){
             }
 
             if(y == 0 || BlockStorage::GetBlock(blocks[blockBelow])->GetType() == BlockType::AIR){
+                glm::vec4 textureUVs = 
+                TextureAtlasStorage::GetTexture("BaseAtlas")->GetUV(BlockStorage::GetBlock(blocks[i])->GetTextureId(BlockFace::BOTTOM));
                 unsigned int baseVertex = mesh.GetVertices().size() / 5;
                 //Need to loop over the indices in this case top face indices
                 //Then need to add the vertices to the mesh with the position offset
@@ -151,8 +182,11 @@ void Chunk::BuildMesh(glm::vec3 pos){
                     mesh.GetVertices().push_back(vertices[bottomFaceIndices[faceIndex] * 5 + 1] + y);
                     mesh.GetVertices().push_back(vertices[bottomFaceIndices[faceIndex] * 5 + 2] + z);
 
-                    mesh.GetVertices().push_back(textureUVs[vertices[bottomFaceIndices[faceIndex] * 5 + 3]]);
-                    mesh.GetVertices().push_back(textureUVs[vertices[bottomFaceIndices[faceIndex] * 5 + 4]]);
+                    float uvX = vertices[bottomFaceIndices[faceIndex] * 5 + 3];
+                    float uvY = vertices[bottomFaceIndices[faceIndex] * 5 + 4];
+
+                    mesh.GetVertices().push_back(glm::mix(textureUVs.x, textureUVs.z, uvX)); 
+                    mesh.GetVertices().push_back(glm::mix(textureUVs.y, textureUVs.w, uvY));
                 }
 
                 for(int i = 0; i < 6; i++){
@@ -161,6 +195,8 @@ void Chunk::BuildMesh(glm::vec3 pos){
             }
 
             if(x == width - 1 || BlockStorage::GetBlock(blocks[blockRight])->GetType() == BlockType::AIR){
+                glm::vec4 textureUVs = 
+                TextureAtlasStorage::GetTexture("BaseAtlas")->GetUV(BlockStorage::GetBlock(blocks[i])->GetTextureId(BlockFace::RIGHT));
                 unsigned int baseVertex = mesh.GetVertices().size() / 5;
                 //Need to loop over the indices in this case top face indices
                 //Then need to add the vertices to the mesh with the position offset
@@ -169,8 +205,11 @@ void Chunk::BuildMesh(glm::vec3 pos){
                     mesh.GetVertices().push_back(vertices[rightFaceIndices[faceIndex] * 5 + 1] + y);
                     mesh.GetVertices().push_back(vertices[rightFaceIndices[faceIndex] * 5 + 2] + z);
 
-                    mesh.GetVertices().push_back(textureUVs[vertices[rightFaceIndices[faceIndex] * 5 + 3]]);
-                    mesh.GetVertices().push_back(textureUVs[vertices[rightFaceIndices[faceIndex] * 5 + 4]]);
+                    float uvX = vertices[rightFaceIndices[faceIndex] * 5 + 3];
+                    float uvY = vertices[rightFaceIndices[faceIndex] * 5 + 4];
+
+                    mesh.GetVertices().push_back(glm::mix(textureUVs.x, textureUVs.z, uvX)); 
+                    mesh.GetVertices().push_back(glm::mix(textureUVs.y, textureUVs.w, uvY));
                 }
 
                 for(int i = 0; i < 6; i++){
@@ -179,6 +218,8 @@ void Chunk::BuildMesh(glm::vec3 pos){
             }
 
             if(x == 0 || BlockStorage::GetBlock(blocks[blockLeft])->GetType() == BlockType::AIR){
+                glm::vec4 textureUVs = 
+                TextureAtlasStorage::GetTexture("BaseAtlas")->GetUV(BlockStorage::GetBlock(blocks[i])->GetTextureId(BlockFace::LEFT));
                 unsigned int baseVertex = mesh.GetVertices().size() / 5;
                 //Need to loop over the indices in this case top face indices
                 //Then need to add the vertices to the mesh with the position offset
@@ -187,8 +228,11 @@ void Chunk::BuildMesh(glm::vec3 pos){
                     mesh.GetVertices().push_back(vertices[leftFaceIndices[faceIndex] * 5 + 1] + y);
                     mesh.GetVertices().push_back(vertices[leftFaceIndices[faceIndex] * 5 + 2] + z);
 
-                    mesh.GetVertices().push_back(textureUVs[vertices[leftFaceIndices[faceIndex] * 5 + 3]]);
-                    mesh.GetVertices().push_back(textureUVs[vertices[leftFaceIndices[faceIndex] * 5 + 4]]);
+                    float uvX = vertices[leftFaceIndices[faceIndex] * 5 + 3];
+                    float uvY = vertices[leftFaceIndices[faceIndex] * 5 + 4];
+
+                    mesh.GetVertices().push_back(glm::mix(textureUVs.x, textureUVs.z, uvX)); 
+                    mesh.GetVertices().push_back(glm::mix(textureUVs.y, textureUVs.w, uvY));
                 }
 
                 for(int i = 0; i < 6; i++){
@@ -197,6 +241,8 @@ void Chunk::BuildMesh(glm::vec3 pos){
             }
 
             if(z == width - 1 || BlockStorage::GetBlock(blocks[blockFront])->GetType() == BlockType::AIR){
+                glm::vec4 textureUVs = 
+                TextureAtlasStorage::GetTexture("BaseAtlas")->GetUV(BlockStorage::GetBlock(blocks[i])->GetTextureId(BlockFace::FRONT));
                 unsigned int baseVertex = mesh.GetVertices().size() / 5;
                 //Need to loop over the indices in this case top face indices
                 //Then need to add the vertices to the mesh with the position offset
@@ -205,17 +251,21 @@ void Chunk::BuildMesh(glm::vec3 pos){
                     mesh.GetVertices().push_back(vertices[frontFaceIndices[faceIndex] * 5 + 1] + y);
                     mesh.GetVertices().push_back(vertices[frontFaceIndices[faceIndex] * 5 + 2] + z);
 
+                    float uvX = vertices[frontFaceIndices[faceIndex] * 5 + 3];
+                    float uvY = vertices[frontFaceIndices[faceIndex] * 5 + 4];
 
-                    mesh.GetVertices().push_back(textureUVs[vertices[frontFaceIndices[faceIndex] * 5 + 3]]);
-                    mesh.GetVertices().push_back(textureUVs[vertices[frontFaceIndices[faceIndex] * 5 + 4]]);
+                    mesh.GetVertices().push_back(glm::mix(textureUVs.x, textureUVs.z, uvX)); 
+                    mesh.GetVertices().push_back(glm::mix(textureUVs.y, textureUVs.w, uvY));
                 }
 
                 for(int i = 0; i < 6; i++){
                     mesh.GetIndices().push_back(baseVertex + i);
                 }
             }
-
+ 
             if(z == 0 || BlockStorage::GetBlock(blocks[blockBack])->GetType() == BlockType::AIR){
+                glm::vec4 textureUVs = 
+                TextureAtlasStorage::GetTexture("BaseAtlas")->GetUV(BlockStorage::GetBlock(blocks[i])->GetTextureId(BlockFace::BACK));
                 unsigned int baseVertex = mesh.GetVertices().size() / 5;
                 //Need to loop over the indices in this case top face indices
                 //Then need to add the vertices to the mesh with the position offset
@@ -224,9 +274,11 @@ void Chunk::BuildMesh(glm::vec3 pos){
                     mesh.GetVertices().push_back(vertices[backFaceIndices[faceIndex] * 5 + 1] + y);
                     mesh.GetVertices().push_back(vertices[backFaceIndices[faceIndex] * 5 + 2] + z);
 
+                    float uvX = vertices[backFaceIndices[faceIndex] * 5 + 3];
+                    float uvY = vertices[backFaceIndices[faceIndex] * 5 + 4];
 
-                    mesh.GetVertices().push_back(textureUVs[vertices[backFaceIndices[faceIndex] * 5 + 3]]);
-                    mesh.GetVertices().push_back(textureUVs[vertices[backFaceIndices[faceIndex] * 5 + 4]]);
+                    mesh.GetVertices().push_back(glm::mix(textureUVs.x, textureUVs.z, uvX)); 
+                    mesh.GetVertices().push_back(glm::mix(textureUVs.y, textureUVs.w, uvY));
                 }
 
                 for(int i = 0; i < 6; i++){

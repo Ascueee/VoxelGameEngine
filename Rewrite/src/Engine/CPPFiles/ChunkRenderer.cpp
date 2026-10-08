@@ -40,8 +40,10 @@ void ChunkRenderer::Draw(Chunk& chunk, glm::vec3 pos){
     shader.Use();
     glBindVertexArray(chunk.GetMesh().GetVAO());
 
+    float blockSize = 4;
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, chunk.GetPosition());
+    model = glm::translate(model, chunk.GetPosition() * blockSize);
+    model = glm::scale(model, glm::vec3(blockSize));
 
     //set texture
     glBindTexture(GL_TEXTURE_2D, TextureAtlasStorage::GetTexture("BaseAtlas")->GetHandle());
@@ -63,8 +65,8 @@ void ChunkRenderer::Draw(Chunk& chunk, glm::vec3 pos){
 
 //using the chunk gets its mesh and delete the vao, vbo, and ebo
 void ChunkRenderer::Delete(Chunk& chunk){
-    Mesh chunkMesh = chunk.GetMesh();
-    
+    Mesh& chunkMesh = chunk.GetMesh();
+
     glDeleteBuffers(1, &chunkMesh.GetVBO());
     glDeleteVertexArrays(1, &chunkMesh.GetVAO());
     glDeleteBuffers(1, &chunkMesh.GetEBO());

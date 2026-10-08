@@ -2,10 +2,8 @@
 
 std::unordered_map<glm::vec3, Chunk, Vec3Hash> WorldGenerator::chunks;
 glm::vec3 WorldGenerator::lastPosition;
-FastNoise WorldGenerator::tempreture;
-FastNoise WorldGenerator::wetness;
 
-int WorldGenerator::renderDistance = 20;
+int WorldGenerator::renderDistance = 22;
 bool WorldGenerator::firstRun = true;
 WorldGenerator::WorldGenerator(){}
 
@@ -20,14 +18,6 @@ void WorldGenerator::GenerateWorld(glm::vec3 pos){
     lastPosition = center;
     glm::vec3 chunkCullBoundsMin = glm::vec3(center.x - renderDistance * 16.0f, center.y, center.z - renderDistance * 16.0f);
     glm::vec3 chunkCullBoundsMax = glm::vec3(center.x + renderDistance * 16.0f, center.y, center.z + renderDistance * 16.0f);
-
-    tempreture.SetNoiseType(FastNoise::Perlin);
-    tempreture.SetSeed(12345 + 300);
-    tempreture.SetFrequency(0.1f);
-
-    wetness.SetNoiseType(FastNoise::Perlin);
-    wetness.SetSeed(12345 + 800);
-    wetness.SetFrequency(0.1f);
 
     //Now that the chunks are generated and in the dictionary need to do a second pass where I go though each chunk
     //and see if they are in the render distence if not delete out of the dictionary to save ram
@@ -46,7 +36,7 @@ void WorldGenerator::GenerateWorld(glm::vec3 pos){
             ++it;
         }
     }
-    std::cout << "[World Generator] Number of chunks: {" << chunks.size() << "} \n";
+    //std::cout << "[World Generator] Number of chunks: {" << chunks.size() << "} \n";
 
     //Before adding the chunk need to see if its in the render distance
     for(int x = -renderDistance; x < renderDistance; x++){
@@ -58,10 +48,6 @@ void WorldGenerator::GenerateWorld(glm::vec3 pos){
             //then send the biome to chunk which will change the frequency and have a multiplier to the noise
             int worldX = center.x + x;
             int worldZ = center.z + y;
-
-            float tempretureNoise = (tempreture.GetNoise(worldX, worldZ) + 1.0f) * 50.0f;
-
-            float wetnessNoise = (wetness.GetNoise(worldX, worldZ) + 1.0f) * 50.0f;
 
             //Checks if the chunks is already in the dictionary if so continue to the next chunk
             if(chunks.find(offSet) != chunks.end() && firstRun == false){
@@ -75,8 +61,7 @@ void WorldGenerator::GenerateWorld(glm::vec3 pos){
                 file.open(dir/fileName);
 
                 if(chunks.find(offSet) == chunks.end()){
-                    chunks.emplace(offSet, Chunk(offSet,
-                         BiomeStorage::GetBiomeByTempAndWetness(glm::vec2(tempretureNoise, wetnessNoise))));
+                    chunks.emplace(offSet, Chunk(offSet));
                 }
 
                 chunk = &chunks.at(offSet);
@@ -89,7 +74,7 @@ void WorldGenerator::GenerateWorld(glm::vec3 pos){
                 }
             }
             else{
-                chunks.emplace(offSet, Chunk(offSet, BiomeStorage::GetBiomeByName("Plains Islands")));
+                chunks.emplace(offSet, Chunk(offSet));
                 chunk = &chunks.at(offSet);
                 //Now need to check if the chunk has already been saved in the chunkData folder if so dont build the chunk again
                 chunk->BuildChunk(offSet);
@@ -99,7 +84,6 @@ void WorldGenerator::GenerateWorld(glm::vec3 pos){
             ChunkRenderer::LoadMesh(chunks.at(offSet), pos);
         }
     }
-
     firstRun = false;
 }
 
@@ -115,14 +99,13 @@ void WorldGenerator::RenderWorld(glm::vec3 pos){
     int maxZ = lastPosition.z + (renderDistance - boundsDistence) * 16;
 
     if(center.x > maxX || center.x < minX || center.z > maxZ || center.z < minZ){
-        std::cout << "[WorldGenerator]  reached the bounds Update the world \n";
+        //std::cout << "[WorldGenerator]  reached the bounds Update the world \n";
         GenerateWorld(pos);
     }
 
     for(int x = -renderDistance; x < renderDistance; x++){
         for(int y = -renderDistance; y < renderDistance; y++){
             glm::vec3 offSet = glm::vec3(lastPosition.x + x * 16.0f, 0.0f, lastPosition.z + y * 16.0f);
-
 
             //Updates the chunks events
             //chunks.at(offSet).UpdateChunk(pos);
