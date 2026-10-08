@@ -1,0 +1,7 @@
+{
+    "name": "Dessert Islands",
+    "biomeTemp": 0.3,
+    "biomeWetness": -0.3,
+    "islandness": 100,
+    "blockPallet": [5,6]
+}

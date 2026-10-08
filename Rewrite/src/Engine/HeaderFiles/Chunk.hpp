@@ -6,6 +6,8 @@
 #include <Biome.hpp>
 #include <TextureAtlasStorage.hpp>
 #include <BlockStorage.hpp>
+#include <BiomeStorage.hpp>
+#include <BlockModelStorage.hpp>
 #include <fastnoise/FastNoise.h>
 #include <unordered_map>
 #include <functional>
@@ -14,6 +16,7 @@
 #include <fstream>
 #include <filesystem>
 #include <sstream>
+
 //A chunk is a portion of terain which holds blocks
 // chunkPosition - where the chunk is in the world
 // blocks - all the blocks in the terrain in a 1D vector
@@ -21,7 +24,7 @@
 class Chunk{
     public:
         Chunk();
-        Chunk(glm::vec3 position, Biome* biome);
+        Chunk(glm::vec3 position);
         void BuildChunk(glm::vec3 pos);
         void BuildMesh(glm::vec3 pos);
         void UpdateChunk(glm::vec3 pos);
@@ -46,5 +49,7 @@ class Chunk{
         bool isGenerated = false;
         FastNoise islandness;
         FastNoise mountainess;
+        FastNoise tempreture;
+        FastNoise wetness;
         Biome* biome;
 };

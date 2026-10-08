@@ -11,19 +11,28 @@ enum BlockType{
     LIQUID
 };
 
+enum BlockFace{
+    TOP,
+    BOTTOM,
+    RIGHT,
+    LEFT,
+    FRONT,
+    BACK
+};
+
 class Block{
     public:
-        Block(std::string name, unsigned int id, unsigned int textureId, BlockType type);
+        Block(std::string name, unsigned int id, std::vector<unsigned int> textureIds, BlockType type);
         void SetPosition(glm::vec3 position);
         void SetId(unsigned int id);
         std::string& GetName();
         unsigned int& GetId();
-        unsigned int& GetTextureId();
+        unsigned int& GetTextureId(BlockFace face);
         glm::vec3 GetPosition();
         BlockType& GetType();
     private:
         std::string name;
         unsigned int id;
-        unsigned int textureId;
+        std::vector<unsigned int> textureIds;
         BlockType type;
 };

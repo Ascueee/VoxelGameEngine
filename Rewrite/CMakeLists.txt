@@ -54,6 +54,7 @@ add_executable(A_Pirates_Tale
     src/Engine/CPPFiles/BiomeStorage.cpp
     src/Engine/CPPFiles/TextureAtlasStorage.cpp
     src/Engine/CPPFiles/BlockStorage.cpp
+    src/Engine/CPPFiles/BlockModelStorage.cpp
     src/Engine/CPPFiles/BlockEvents.cpp
     src/Engine/CPPFiles/Camera.cpp
 
@@ -62,6 +63,7 @@ add_executable(A_Pirates_Tale
     src/Assets/CPPFiles/Biome.cpp
     src/Assets/CPPFiles/Block.cpp
     src/Assets/CPPFiles/TextureAtlas.cpp
+    src/Assets/CPPFiles/BlockMesh.cpp
 )
 
 target_include_directories(A_Pirates_Tale PRIVATE

@@ -9,11 +9,11 @@ class Mesh{
         unsigned int& GetVBO();
         unsigned int& GetVAO();
         unsigned int& GetEBO();
-
-    private:
+    protected:
         unsigned int vbo;
         unsigned int vao;
         unsigned int ebo;
         std::vector<float> vertices;
+    private:
         std::vector<unsigned int> indices;
 };
