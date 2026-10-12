@@ -50,6 +50,7 @@ add_executable(A_Pirates_Tale
     src/Engine/CPPFiles/Entity.cpp
     src/Engine/CPPFiles/Chunk.cpp
     src/Engine/CPPFiles/ChunkRenderer.cpp
+    src/Engine/CPPFiles/Renderer.cpp
     src/Engine/CPPFiles/WorldGenerator.cpp
     src/Engine/CPPFiles/BiomeStorage.cpp
     src/Engine/CPPFiles/TextureAtlasStorage.cpp

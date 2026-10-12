@@ -2,6 +2,7 @@
 
 Shader ChunkRenderer::shader;
 Camera* ChunkRenderer::camera;
+unsigned int ChunkRenderer::gBuffer;
 ChunkRenderer::ChunkRenderer(){}
 
 void ChunkRenderer::Load(Camera* cam){
@@ -10,7 +11,7 @@ void ChunkRenderer::Load(Camera* cam){
     camera = cam;
 }
 
-void ChunkRenderer::LoadMesh(Chunk& chunk, glm::vec3 pos){
+void ChunkRenderer::LoadMesh(Chunk& chunk){
     //std::cout << "[ChunkRenderer] Loading chunk mesh \n";
     Mesh& chunkMesh = chunk.GetMesh();
 
@@ -36,7 +37,7 @@ void ChunkRenderer::LoadMesh(Chunk& chunk, glm::vec3 pos){
     glBindVertexArray(0); 
 }
 
-void ChunkRenderer::Draw(Chunk& chunk, glm::vec3 pos){
+void ChunkRenderer::Draw(Chunk& chunk){
     shader.Use();
     glBindVertexArray(chunk.GetMesh().GetVAO());
 

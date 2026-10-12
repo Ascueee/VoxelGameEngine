@@ -59,7 +59,7 @@ void BlockModelStorage::ProcessBlockMesh(BlockMesh& blockMesh, aiMesh *mesh, con
     //This will add to the blockMesh vertices
     std::vector<float>& vertices = blockMesh.GetVertices();
 
-    unsigned int baseVertex = vertices.size() / 5;
+    unsigned int baseVertex = vertices.size() / 8;
     //Extract vertex data
     for(int i = 0; i < mesh->mNumVertices; i++){
 
@@ -68,12 +68,24 @@ void BlockModelStorage::ProcessBlockMesh(BlockMesh& blockMesh, aiMesh *mesh, con
         vertices.push_back(mesh->mVertices[i].y);
         vertices.push_back(mesh->mVertices[i].z);
 
-        //Need to add UVS to the vertices data
+        //Need to add UVS
         if(mesh->mTextureCoords[0]){
             vertices.push_back(mesh->mTextureCoords[0][i].x);
             vertices.push_back(mesh->mTextureCoords[0][i].y);
         }
         else{
+            vertices.push_back(0);
+            vertices.push_back(0);
+        }
+
+        //need to add normals
+        if(mesh->HasNormals()){
+            vertices.push_back(mesh->mNormals[i].x);
+            vertices.push_back(mesh->mNormals[i].y);
+            vertices.push_back(mesh->mNormals[i].z);
+        }
+        else{
+            vertices.push_back(0);
             vertices.push_back(0);
             vertices.push_back(0);
         }

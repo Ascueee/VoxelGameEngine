@@ -27,5 +27,5 @@ glm::mat4 Camera::GetView(){
 }
 
 glm::mat4 Camera::GetProjection(){
-    return glm::perspective(glm::radians(60.0f), 1280.0f / 720.0f,  0.1f, 1000.0f);
+    return glm::perspective(glm::radians(60.0f), 1280.0f / 720.0f,  0.1f, 2000.0f);
 }
