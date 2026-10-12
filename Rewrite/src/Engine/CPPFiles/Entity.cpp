@@ -5,9 +5,9 @@ Entity::Entity(std::string name){
 }
 
 void Entity::Load(){
-    std::cout << "Loading Entity { " << name << "} \n"; 
+    std::cout << "[Entity] Loading Entity { " << name << "} \n"; 
 }
 
 void Entity::Update(){
-    std::cout << "Updating Entity { " << name << "} \n"; 
+    std::cout << "[Entity] Updating Entity { " << name << "} \n"; 
 }

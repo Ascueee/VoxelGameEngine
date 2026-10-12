@@ -77,9 +77,10 @@ int main()
         return -1;
     }
     glEnable(GL_DEPTH_TEST);
-    Camera camera = Camera(glm::vec3(0,400, 0));
+    Camera camera = Camera(glm::vec3(800,400, 0));
 
-    ChunkRenderer::Load(&camera);
+    //ChunkRenderer::Load(&camera);
+    Renderer::Load(&camera);
     BiomeStorage::Load();
     TextureAtlasStorage::Load();
     BlockStorage::Load();
@@ -92,6 +93,8 @@ int main()
     //divides the camera position by blockSize to keep the position consistant with the world
     WorldGenerator::GenerateWorld(camera.GetPosition() / 4.0f);
 
+    Renderer::LoadGBuffer();
+
     while (!glfwWindowShouldClose(window))
     {
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -101,7 +104,14 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         processInput(window, camera);
+
+        Renderer::InitializeGeometryPass();
         WorldGenerator::RenderWorld(camera.GetPosition() / 4.0f);
+
+        //renders to screen quad
+        int fbWidth, fbHeight;
+        glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
+        Renderer::RenderPass(fbWidth, fbHeight);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

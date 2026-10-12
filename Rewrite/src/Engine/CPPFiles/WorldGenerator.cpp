@@ -3,7 +3,7 @@
 std::unordered_map<glm::vec3, Chunk, Vec3Hash> WorldGenerator::chunks;
 glm::vec3 WorldGenerator::lastPosition;
 
-int WorldGenerator::renderDistance = 22;
+int WorldGenerator::renderDistance = 12;
 bool WorldGenerator::firstRun = true;
 WorldGenerator::WorldGenerator(){}
 
@@ -29,7 +29,8 @@ void WorldGenerator::GenerateWorld(glm::vec3 pos){
         if(chunkPosition.x < chunkCullBoundsMin.x || chunkPosition.z < chunkCullBoundsMin.z || 
             chunkPosition.x > chunkCullBoundsMax.x || chunkPosition.z > chunkCullBoundsMax.z){
             //std::cout << "[World Generator] Chunk Needs to be culled and deleted from dictionary\n";
-            ChunkRenderer::Delete(it->second);
+
+            Renderer::Delete(it->second.GetMesh());
             it = chunks.erase(it);
         }
         else{
@@ -54,6 +55,7 @@ void WorldGenerator::GenerateWorld(glm::vec3 pos){
                 continue;
             }
 
+            //checks if the chunk is saved in the chunkData folder
             std::filesystem::path fileName = "chunk_" + std::to_string((int)offSet.x) + "_" + 
                 std::to_string((int)offSet.y) + "_" + std::to_string((int)offSet.z) + ".txt";
             
@@ -79,11 +81,21 @@ void WorldGenerator::GenerateWorld(glm::vec3 pos){
                 //Now need to check if the chunk has already been saved in the chunkData folder if so dont build the chunk again
                 chunk->BuildChunk(offSet);
             }
-
-            chunk->BuildMesh(offSet);
-            ChunkRenderer::LoadMesh(chunks.at(offSet), pos);
         }
     }
+
+    for (auto& [offSet, currentChunk] : chunks) {
+        // 1. Build the chunk mesh
+        // (Use 'currentChunk' or 'currentChunk.BuildMesh(offSet)' depending on your Chunk method signature)
+        currentChunk.BuildMesh(offSet); 
+
+        // 2. Load the mesh into the renderer
+        // Pass 'currentChunk' directly instead of doing a map lookup via chunks.at(...)
+
+        //ChunkRenderer::LoadMesh(currentChunk);
+        Renderer::LoadMesh(currentChunk.GetMesh());
+    }
+
     firstRun = false;
 }
 
@@ -92,7 +104,7 @@ void WorldGenerator::RenderWorld(glm::vec3 pos){
     
     //need to check for the min x and max x and if the offSet is at that bounds load the new chunks
     //Also do the same for y get the min and max and check if offSet is at the bounds if so generate
-    int boundsDistence = 10;
+    int boundsDistence = 8;
     int minX = lastPosition.x - (renderDistance - boundsDistence) * 16;
     int maxX = lastPosition.x + (renderDistance - boundsDistence) * 16;
     int minZ = lastPosition.z - (renderDistance - boundsDistence) * 16;
@@ -111,12 +123,27 @@ void WorldGenerator::RenderWorld(glm::vec3 pos){
             //chunks.at(offSet).UpdateChunk(pos);
             //if the chunk has been updated from an event or block place update the mesh
             if(chunks.at(offSet).GetIsGenerated() == false){
-                chunks.at(offSet).BuildMesh(pos);
+                chunks.at(offSet).BuildMesh(offSet);
                 chunks.at(offSet).SaveChunk();
-                ChunkRenderer::LoadMesh(chunks.at(offSet), pos);
+
+                //ChunkRenderer::LoadMesh(chunks.at(offSet));
+                Renderer::LoadMesh(chunks.at(offSet).GetMesh());
             }
-            ChunkRenderer::Draw(chunks.at(offSet), pos);
+
+            //ChunkRenderer::Draw(chunks.at(offSet));
+            Renderer::GeometryPass(chunks.at(offSet).GetMesh(), chunks.at(offSet).GetPosition());
             //std::cout << "[World Generator] Drawing Chunks \n"; 
         }
+    }
+}
+
+Chunk* WorldGenerator::GetChunk(glm::vec3 chunkPos){
+    if (chunks.find(chunkPos) != chunks.end())
+    {
+        return &chunks[chunkPos];
+    }
+    else
+    {
+        return nullptr;
     }
 }
