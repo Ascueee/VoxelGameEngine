@@ -13,7 +13,7 @@ void ChunkRenderer::Load(Camera* cam){
 
 void ChunkRenderer::LoadMesh(Chunk& chunk){
     //std::cout << "[ChunkRenderer] Loading chunk mesh \n";
-    Mesh& chunkMesh = chunk.GetMesh();
+    Mesh& chunkMesh = chunk.GetTerrainMesh();
 
     glGenBuffers(1, &chunkMesh.GetVBO());
     glGenVertexArrays(1, &chunkMesh.GetVAO());
@@ -39,7 +39,7 @@ void ChunkRenderer::LoadMesh(Chunk& chunk){
 
 void ChunkRenderer::Draw(Chunk& chunk){
     shader.Use();
-    glBindVertexArray(chunk.GetMesh().GetVAO());
+    glBindVertexArray(chunk.GetTerrainMesh().GetVAO());
 
     float blockSize = 4;
     glm::mat4 model = glm::mat4(1.0f);
@@ -60,13 +60,13 @@ void ChunkRenderer::Draw(Chunk& chunk){
 
 
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glDrawElements(GL_TRIANGLES, chunk.GetMesh().GetIndices().size(), GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, chunk.GetTerrainMesh().GetIndices().size(), GL_UNSIGNED_INT, 0);
 }
 
 
 //using the chunk gets its mesh and delete the vao, vbo, and ebo
 void ChunkRenderer::Delete(Chunk& chunk){
-    Mesh& chunkMesh = chunk.GetMesh();
+    Mesh& chunkMesh = chunk.GetTerrainMesh();
 
     glDeleteBuffers(1, &chunkMesh.GetVBO());
     glDeleteVertexArrays(1, &chunkMesh.GetVAO());

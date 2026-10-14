@@ -9,7 +9,9 @@
 NLOHMANN_JSON_SERIALIZE_ENUM(BlockType, {
     {BlockType::AIR, "Air"},
     {BlockType::SOLID, "Solid"},
-    {BlockType::LIQUID, "Liquid"}
+    {BlockType::LIQUID, "Liquid"},
+    {BlockType::FOLIAGE, "Foliage"}
+
 });
 
 class BlockStorage{

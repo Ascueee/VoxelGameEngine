@@ -6,6 +6,7 @@
 #include <TextureAtlasStorage.hpp>
 #include <glm/glm.hpp>
 #include <vector>
+#include <queue>
 
 struct GBuffer{
     unsigned int handle;
@@ -57,6 +58,8 @@ class Renderer{
         static void InitializeGeometryPass();
         static void GeometryPass(Mesh& mesh, glm::vec3 position);
         static void RenderPass(float screenWidth, float screenHeight);
+        static void ForwardPass(float screenWidth, float screenHeight);
+        static void InitializeIds();
         static void Delete(Mesh& mesh);
     private:
         static Shader shader;
@@ -65,4 +68,5 @@ class Renderer{
         static Camera* camera;
         static GBuffer gBuffer;
         static RenderQuad renderQuad;
+        static std::queue<ushort> rendererIds;
 };

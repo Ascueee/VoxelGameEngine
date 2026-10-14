@@ -30,7 +30,7 @@ void WorldGenerator::GenerateWorld(glm::vec3 pos){
             chunkPosition.x > chunkCullBoundsMax.x || chunkPosition.z > chunkCullBoundsMax.z){
             //std::cout << "[World Generator] Chunk Needs to be culled and deleted from dictionary\n";
 
-            Renderer::Delete(it->second.GetMesh());
+            Renderer::Delete(it->second.GetTerrainMesh());
             it = chunks.erase(it);
         }
         else{
@@ -87,13 +87,13 @@ void WorldGenerator::GenerateWorld(glm::vec3 pos){
     for (auto& [offSet, currentChunk] : chunks) {
         // 1. Build the chunk mesh
         // (Use 'currentChunk' or 'currentChunk.BuildMesh(offSet)' depending on your Chunk method signature)
-        currentChunk.BuildMesh(offSet); 
+        currentChunk.BuildChunkMesh(offSet); 
 
         // 2. Load the mesh into the renderer
         // Pass 'currentChunk' directly instead of doing a map lookup via chunks.at(...)
 
         //ChunkRenderer::LoadMesh(currentChunk);
-        Renderer::LoadMesh(currentChunk.GetMesh());
+        Renderer::LoadMesh(currentChunk.GetTerrainMesh());
     }
 
     firstRun = false;
@@ -123,15 +123,16 @@ void WorldGenerator::RenderWorld(glm::vec3 pos){
             //chunks.at(offSet).UpdateChunk(pos);
             //if the chunk has been updated from an event or block place update the mesh
             if(chunks.at(offSet).GetIsGenerated() == false){
-                chunks.at(offSet).BuildMesh(offSet);
+                chunks.at(offSet).BuildChunkMesh(offSet);
                 chunks.at(offSet).SaveChunk();
 
                 //ChunkRenderer::LoadMesh(chunks.at(offSet));
-                Renderer::LoadMesh(chunks.at(offSet).GetMesh());
+                Renderer::LoadMesh(chunks.at(offSet).GetTerrainMesh());
             }
 
             //ChunkRenderer::Draw(chunks.at(offSet));
-            Renderer::GeometryPass(chunks.at(offSet).GetMesh(), chunks.at(offSet).GetPosition());
+            Renderer::GeometryPass(chunks.at(offSet).GetTerrainMesh(), chunks.at(offSet).GetPosition());
+            //then do the renderer forward pass with the mesh
             //std::cout << "[World Generator] Drawing Chunks \n"; 
         }
     }
