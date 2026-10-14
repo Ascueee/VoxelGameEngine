@@ -17,11 +17,12 @@ void BiomeStorage::Load(){
         nlohmann::json data;
         file >> data;
 
-        Biome biome = Biome(data["name"].get<std::string>(), data["biomeTemp"].get<float>(), data["biomeWetness"].get<float>(),
-         data["islandness"].get<int>(), data["blockPallet"].get<std::vector<int>>());
-        biomes.emplace(glm::vec2(data["biomeTemp"].get<float>(),data["biomeWetness"].get<float>()), biome);
+        Biome biome = Biome(data["name"].get<std::string>(), data["WorldGeneration"]["biomeTemp"].get<float>(),
+         data["WorldGeneration"]["biomeWetness"].get<float>(), data["WorldGeneration"]["islandness"].get<int>(),
+          data["TerrainBlocks"]["blockPallet"].get<std::vector<int>>(), data["Decoration"]["foliageBlocks"].get<std::unordered_map<std::string, int>>());
+        biomes.emplace(glm::vec2(data["WorldGeneration"]["biomeTemp"].get<float>(),data["WorldGeneration"]["biomeWetness"].get<float>()), biome);
         std::cout << "[Biome Storage] Loading Biome: " << data["name"].get<std::string>() << ", " 
-        << data["islandness"].get<int>() << "\n";
+        << data["WorldGeneration"]["islandness"].get<int>() << "\n";
    }
 }
 

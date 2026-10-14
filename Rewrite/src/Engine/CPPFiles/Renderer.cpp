@@ -6,6 +6,7 @@ Shader Renderer::renderPass;
 Camera* Renderer::camera;
 GBuffer Renderer::gBuffer;
 RenderQuad Renderer::renderQuad;
+std::queue<ushort> Renderer::rendererIds;
 Renderer::Renderer(){}
 
 void Renderer::Load(Camera* cam){
@@ -17,6 +18,8 @@ void Renderer::Load(Camera* cam){
         "/Users/hayyan/Desktop/Repos/CPPEngine/Rewrite/src/Assets/Shaders/RenderPass.frag");
     
     camera = cam;
+
+    InitializeIds();
 }
 
 //gets a mesh and uploads it to the gpu for rendering
@@ -43,7 +46,7 @@ void Renderer::LoadMesh(Mesh& mesh){
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh.GetIndices().size() * sizeof(unsigned int), mesh.GetIndices().data(), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0); 
-    glBindVertexArray(0); 
+    glBindVertexArray(0);
 }
 
 void Renderer::LoadGBuffer(){
@@ -87,7 +90,6 @@ void Renderer::LoadGBuffer(){
         std::cout << "Framebuffer not complete!" << std::endl;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-
     //initialize the render quad for the render pass
     glGenBuffers(1, &renderQuad.renderQuadVBO);
     glGenVertexArrays(1, &renderQuad.renderQuadVAO);
@@ -115,6 +117,7 @@ void Renderer::InitializeGeometryPass(){
 }
 
 void Renderer::GeometryPass(Mesh& mesh, glm::vec3 position){
+
     //Geometry pass
     glBindVertexArray(mesh.GetVAO());
     geometryPass.Use();
@@ -179,16 +182,27 @@ void Renderer::RenderPass(float screenWidth, float screenHeight){
     renderPass.setFloat("pointLights[0].quadratic", 0.0f);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
-
     glBindVertexArray(0);
-
     glEnable(GL_DEPTH_TEST);
+}
+
+void Renderer::ForwardPass(float screenWidth, float screenHeight){
+}
+
+//fill the id que with all the ids
+void Renderer::InitializeIds(){
+    for(int i = 0; i < 65535; i++){
+        rendererIds.push(i);
+    }
 }
 
 void Renderer::Delete(Mesh& mesh){
     glDeleteBuffers(1, &mesh.GetVBO());
     glDeleteVertexArrays(1, &mesh.GetVAO());
     glDeleteBuffers(1, &mesh.GetEBO());
+
+    //delete it from renderer mesh list and put the id back in the queue
+
 }
 
 

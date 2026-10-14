@@ -77,7 +77,7 @@ int main()
         return -1;
     }
     glEnable(GL_DEPTH_TEST);
-    Camera camera = Camera(glm::vec3(800,400, 0));
+    Camera camera = Camera(glm::vec3(1000,400, 0));
 
     //ChunkRenderer::Load(&camera);
     Renderer::Load(&camera);
@@ -103,15 +103,16 @@ int main()
         glClearColor(0.2f, 0.4f, 0.8f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        int fbWidth, fbHeight;
+        glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
+
         processInput(window, camera);
 
         Renderer::InitializeGeometryPass();
         WorldGenerator::RenderWorld(camera.GetPosition() / 4.0f);
-
         //renders to screen quad
-        int fbWidth, fbHeight;
-        glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
         Renderer::RenderPass(fbWidth, fbHeight);
+        Renderer::ForwardPass(fbWidth, fbHeight);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

@@ -8,7 +8,8 @@
 enum BlockType{
     AIR,
     SOLID,
-    LIQUID
+    LIQUID,
+    FOLIAGE
 };
 
 enum BlockFace{

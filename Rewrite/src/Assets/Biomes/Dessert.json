@@ -1,0 +1,16 @@
+{
+    "name": "Dessert",
+    "WorldGeneration":{
+        "biomeTemp": 66,
+        "biomeWetness": 39,
+        "islandness": 100
+    },
+    "TerrainBlocks":{
+        "blockPallet": [5,6]
+    },
+    "Decoration":{
+        "foliageBlocks":{
+            "55.0" : 8
+        }
+    }
+}

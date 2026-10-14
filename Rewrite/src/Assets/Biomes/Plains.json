@@ -1,0 +1,16 @@
+{
+    "name": "Plains",
+    "WorldGeneration":{
+        "biomeTemp": 50,
+        "biomeWetness": 50,
+        "islandness": 70
+    },
+    "TerrainBlocks":{
+        "blockPallet": [7,3]
+    },
+    "Decoration":{
+        "foliageBlocks":{
+            "55.0": 8
+        }
+    }
+}

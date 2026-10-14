@@ -16,11 +16,15 @@ Chunk::Chunk(glm::vec3 position){
 
     tempreture.SetNoiseType(FastNoise::Perlin);
     tempreture.SetSeed(12345 + 500);
-    tempreture.SetFrequency(0.001f); 
+    tempreture.SetFrequency(0.01f); 
     
     wetness.SetNoiseType(FastNoise::Perlin);
     wetness.SetSeed(12345 + 800);
-    wetness.SetFrequency(0.001f);  
+    wetness.SetFrequency(0.01f);  
+
+    foliage.SetNoiseType(FastNoise::Perlin);
+    foliage.SetSeed(12345 + 900);
+    foliage.SetFrequency(0.1f);
 }
 
 void Chunk::BuildChunk(glm::vec3 pos){
@@ -35,13 +39,24 @@ void Chunk::BuildChunk(glm::vec3 pos){
         int worldX = position.x + x;
         int worldZ = position.z + z;
 
+        float temperatureNoise = ((tempreture.GetNoise(worldX, worldZ) + 1.0f) * 0.5f) * 100.0f;
+        float wetnessNoise = ((wetness.GetNoise(worldX, worldZ) + 1.0f) * 0.5f) * 100.0f;
 
+        biome = BiomeStorage::GetBiomeByTempAndWetness(glm::vec2(temperatureNoise, wetnessNoise));
+
+        //if the y is above the max height the terrain can generate dont generate noise
+        int maxHeight = 50 + biome->GetIslandness() + 15;
+        if(y > maxHeight)
+            continue;
+        else if(y < 50){
+            //will fill the bottom half of the terrain with stone
+            blocks[i] = (ushort)BlockStorage::GetBlock(biome->GetBlockPallet()[1])->GetId();
+            continue;
+        }
+
+        //Terrain gen stage
         float islandnessNoise = islandness.GetNoise(worldX, worldZ);
         float mountainNoise = mountainess.GetNoise(worldX, worldZ);
-        float tempretureNoise = (tempreture.GetNoise(worldX, worldZ));
-        float wetnessNoise = (wetness.GetNoise(worldX, worldZ));
-
-        biome = BiomeStorage::GetBiomeByTempAndWetness(glm::vec2(tempretureNoise, wetnessNoise));
 
         //Need to fetch the biomes of the surrounding blocks
         //then need to blend between the biomes that differ
@@ -57,6 +72,7 @@ void Chunk::BuildChunk(glm::vec3 pos){
         Biome* backBlockBiome =
             BiomeStorage::GetBiomeByTempAndWetness(glm::vec2(tempreture.GetNoise(worldX, worldZ - 1),
              wetness.GetNoise(worldX, worldZ - 1)));
+        
         int terrainHeight = 50 + static_cast<int>(islandnessNoise * biome->GetIslandness()) + static_cast<int>(mountainNoise * 15);
 
         if(leftBlockBiome->GetName() != biome->GetName()){
@@ -94,7 +110,6 @@ void Chunk::BuildChunk(glm::vec3 pos){
         else if(y <= terrainHeight){
             blocks[i] = (ushort)BlockStorage::GetBlock(biome->GetBlockPallet()[0])->GetId();
         }
-
     }
 
     //Water pass for the terrain
@@ -106,24 +121,67 @@ void Chunk::BuildChunk(glm::vec3 pos){
         }
     }
 
-
-    SaveChunk();
-}
-
-void Chunk::BuildMesh(glm::vec3 pos){
-    mesh.GetVertices().clear();
-    mesh.GetIndices().clear();
-
-    //Vertex Layout: position 3, UVs 2(the uvs represent an index to the vec4 when creating the vertices)
+    //decoration stage
+    //Biome decoration will have three stages:
+    //Foliage pass: where grass and other foliage blocks will be placed
+    //Biome store the foliage blocks in a dictionary and the key is their spawn
+    //will make noise between 0-100
+    //the key will be the value the noise needs to be to spawn the block
     for(int i = 0; i < blocks.size(); i++){
         int x = i % width;
         int y = i / (width * width);
         int z = (i / width) % width;
 
+        //now need to use the biome to get the foliage that is closest to the value
+        //also need to get the foliage spawn bounds so the y of the surface of the terrain and then the heighest y block from the surface
+        //then only use those blocks for the foliage check
+        int maxHeight = 50 + biome->GetIslandness() + 15;
+        int blockBelow = i - width * width;
+
+        //checks if the current block is on the surface and also if the current block is not air foliage can only spawn on air
+        if(y > maxHeight || y < 50)
+            continue;
+        if(BlockStorage::GetBlock(blocks[i])->GetType() != BlockType::AIR)
+            continue;
+        if(BlockStorage::GetBlock(blocks[blockBelow])->GetType() != BlockType::SOLID)
+            continue;
+
+        int worldX = position.x + x;
+        int worldZ = position.z + z;
+
+        float foliageNoise = ((tempreture.GetNoise(worldX, worldZ) + 1.0f) * 0.5f) * 100.0f;
+
+        //place the foliage block here using the biome to get the specific one needed to decorate the biome
+        unsigned int decorationBlock = biome->GetDecorationBlock(foliageNoise);
+        blocks[i] = BlockStorage::GetBlock(decorationBlock)->GetId();
+    }
+
+    //Tree passs: where the trees will be generated
+    //will use a tree builder
+
+    //Structure Stage
+    //this is where general structures will be generated that are found in the biome
+    //will use a structure builder
+    
+    SaveChunk();
+}
+
+void Chunk::BuildChunkMesh(glm::vec3 pos){
+    terrainMesh.GetVertices().clear();
+    terrainMesh.GetIndices().clear();
+
+    //Vertex Layout: position 3, UVs 2(the uvs represent an index to the vec4 when creating the vertices)
+    for(int i = 0; i < blocks.size(); i++){
+        int currentBlock = blocks[i];
+        int blockX = i % width;
+        int blockY = i / (width * width);
+        int blockZ = (i / width) % width;
+
         //checks if the current block is solid
         //if its solid generate the block mesh
         if(BlockStorage::GetBlock(blocks[i])->GetType() == BlockType::SOLID
-         || BlockStorage::GetBlock(blocks[i])->GetType() == BlockType::LIQUID){
+         || BlockStorage::GetBlock(blocks[i])->GetType() == BlockType::LIQUID
+         || BlockStorage::GetBlock(blocks[i])->GetType() == BlockType::FOLIAGE){
             //need to check if the block above the current block is air if its air then render
             int blockAbove = i + width * width;
             int blockBelow = i - width * width;
@@ -134,108 +192,25 @@ void Chunk::BuildMesh(glm::vec3 pos){
             int blockFront = i + width;
             int blockBack  = i - width; 
 
-            
             //gets the block model to use in the meshing process
             BlockMesh* blockMesh = BlockModelStorage::GetBlockModel("Cube.obj");
-            std::vector<float> vertices = blockMesh->GetVertices();
-            std::vector<unsigned int> topFaceIndices = blockMesh->GetFaceIndices("Top");
-            std::vector<unsigned int> bottomFaceIndices = blockMesh->GetFaceIndices("Bottom");
-            std::vector<unsigned int> frontFaceIndices = blockMesh->GetFaceIndices("Front");
-            std::vector<unsigned int> backFaceIndices = blockMesh->GetFaceIndices("Back");
-            std::vector<unsigned int> rightFaceIndices = blockMesh->GetFaceIndices("Right");
-            std::vector<unsigned int> leftFaceIndices = blockMesh->GetFaceIndices("Left");
 
             //need to cull the side of the chunks by checking neighbouring chunks
             //if the neighbouring block on the neighburing chunk is air render the mesh
             //also only do this check on the edge blocks of the chunk
+
             //Front and Back
-            if(y == height - 1 || BlockStorage::GetBlock(blocks[blockAbove])->GetType() == BlockType::AIR){
-
-                //Use a textureAtlas to get the UVS depending on the textureID
-                glm::vec4 textureUVs = 
-                TextureAtlasStorage::GetTexture("BaseAtlas")->GetUV(BlockStorage::GetBlock(blocks[i])->GetTextureId(BlockFace::TOP));
-
-                unsigned int baseVertex = mesh.GetVertices().size() / 8;
-                //Need to loop over the indices in this case top face indices
-                //Then need to add the vertices to the mesh with the position offset
-                for(int faceIndex = 0; faceIndex < 6; faceIndex++){
-                    mesh.GetVertices().push_back(vertices[topFaceIndices[faceIndex] * 8] + x);
-                    mesh.GetVertices().push_back(vertices[topFaceIndices[faceIndex] * 8 + 1] + y);
-                    mesh.GetVertices().push_back(vertices[topFaceIndices[faceIndex] * 8 + 2] + z);
-
-                    float uvX = vertices[topFaceIndices[faceIndex] * 8 + 3];
-                    float uvY = vertices[topFaceIndices[faceIndex] * 8 + 4];
-
-                    mesh.GetVertices().push_back(glm::mix(textureUVs.x, textureUVs.z, uvX)); 
-                    mesh.GetVertices().push_back(glm::mix(textureUVs.y, textureUVs.w, uvY));
-
-                    mesh.GetVertices().push_back(vertices[topFaceIndices[faceIndex] * 8 + 5]);
-                    mesh.GetVertices().push_back(vertices[topFaceIndices[faceIndex] * 8 + 6]);
-                    mesh.GetVertices().push_back(vertices[topFaceIndices[faceIndex] * 8 + 7]);
-
-                }
-
-                for(int i = 0; i < 6; i++){
-                    mesh.GetIndices().push_back(baseVertex + i);
-                }
+            if(blockY == height - 1 || BlockStorage::GetBlock(blocks[blockAbove])->GetType() == BlockType::AIR){
+                BuildMesh(terrainMesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::TOP);
             }
 
-            if(y == 0 || BlockStorage::GetBlock(blocks[blockBelow])->GetType() == BlockType::AIR){
-                glm::vec4 textureUVs = 
-                TextureAtlasStorage::GetTexture("BaseAtlas")->GetUV(BlockStorage::GetBlock(blocks[i])->GetTextureId(BlockFace::BOTTOM));
-                unsigned int baseVertex = mesh.GetVertices().size() / 8;
-                //Need to loop over the indices in this case top face indices
-                //Then need to add the vertices to the mesh with the position offset
-                for(int faceIndex = 0; faceIndex < 6; faceIndex++){
-                    //position
-                    mesh.GetVertices().push_back(vertices[bottomFaceIndices[faceIndex] * 8] + x);
-                    mesh.GetVertices().push_back(vertices[bottomFaceIndices[faceIndex] * 8 + 1] + y);
-                    mesh.GetVertices().push_back(vertices[bottomFaceIndices[faceIndex] * 8 + 2] + z);
-
-                    //uvs
-                    float uvX = vertices[bottomFaceIndices[faceIndex] * 8 + 3];
-                    float uvY = vertices[bottomFaceIndices[faceIndex] * 8 + 4];
-
-                    mesh.GetVertices().push_back(glm::mix(textureUVs.x, textureUVs.z, uvX)); 
-                    mesh.GetVertices().push_back(glm::mix(textureUVs.y, textureUVs.w, uvY));
-
-                    //normals
-                    mesh.GetVertices().push_back(vertices[bottomFaceIndices[faceIndex] * 8 + 5]);
-                    mesh.GetVertices().push_back(vertices[bottomFaceIndices[faceIndex] * 8 + 6]);
-                    mesh.GetVertices().push_back(vertices[bottomFaceIndices[faceIndex] * 8 + 7]);
-                }
-
-                for(int i = 0; i < 6; i++){
-                    mesh.GetIndices().push_back(baseVertex + i);
-                }
+            if(blockY == 0 || BlockStorage::GetBlock(blocks[blockBelow])->GetType() == BlockType::AIR){
+                BuildMesh(terrainMesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::BOTTOM);
             }
 
-            if(x != width - 1){
+            if(blockX != width - 1){
                 if(BlockStorage::GetBlock(blocks[blockRight])->GetType() == BlockType::AIR){
-                    glm::vec4 textureUVs = 
-                    TextureAtlasStorage::GetTexture("BaseAtlas")->GetUV(BlockStorage::GetBlock(blocks[i])->GetTextureId(BlockFace::RIGHT));
-                    unsigned int baseVertex = mesh.GetVertices().size() / 8;
-                    //Need to loop over the indices in this case top face indices
-                    //Then need to add the vertices to the mesh with the position offset
-                    for(int faceIndex = 0; faceIndex < 6; faceIndex++){
-                        mesh.GetVertices().push_back(vertices[rightFaceIndices[faceIndex] * 8] + x);
-                        mesh.GetVertices().push_back(vertices[rightFaceIndices[faceIndex] * 8 + 1] + y);
-                        mesh.GetVertices().push_back(vertices[rightFaceIndices[faceIndex] * 8 + 2] + z);
-
-                        float uvX = vertices[rightFaceIndices[faceIndex] * 8 + 3];
-                        float uvY = vertices[rightFaceIndices[faceIndex] * 8 + 4];
-
-                        mesh.GetVertices().push_back(glm::mix(textureUVs.x, textureUVs.z, uvX)); 
-                        mesh.GetVertices().push_back(glm::mix(textureUVs.y, textureUVs.w, uvY));
-
-                        mesh.GetVertices().push_back(vertices[rightFaceIndices[faceIndex] * 8 + 5]);
-                        mesh.GetVertices().push_back(vertices[rightFaceIndices[faceIndex] * 8 + 6]);
-                        mesh.GetVertices().push_back(vertices[rightFaceIndices[faceIndex] * 8 + 7]);
-                    }
-
-                    for(int i = 0; i < 6; i++){
-                        mesh.GetIndices().push_back(baseVertex + i);
-                    }
+                    BuildMesh(terrainMesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::RIGHT);
                 }
             }
             else{
@@ -250,7 +225,7 @@ void Chunk::BuildMesh(glm::vec3 pos){
                 if(neighbourChunk != nullptr){
                     //now that I have the neighbouring chunk need to get the block thats next to the current block
                     //z = width - 1 
-                    neighbourBlockIndex = 0 + (z * width) + (width * width * y);
+                    neighbourBlockIndex = 0 + (blockZ * width) + (width * width * blockY);
                     neighbourBlock = BlockStorage::GetBlock(neighbourChunk->blocks[neighbourBlockIndex]);
                 }
                 else{
@@ -258,59 +233,13 @@ void Chunk::BuildMesh(glm::vec3 pos){
                 }
 
                 if(neighbourBlock->GetType() == BlockType::AIR){
-                    glm::vec4 textureUVs = 
-                    TextureAtlasStorage::GetTexture("BaseAtlas")->GetUV(BlockStorage::GetBlock(blocks[i])->GetTextureId(BlockFace::RIGHT));
-                    unsigned int baseVertex = mesh.GetVertices().size() / 8;
-                    //Need to loop over the indices in this case top face indices
-                    //Then need to add the vertices to the mesh with the position offset
-                    for(int faceIndex = 0; faceIndex < 6; faceIndex++){
-                        mesh.GetVertices().push_back(vertices[rightFaceIndices[faceIndex] * 8] + x);
-                        mesh.GetVertices().push_back(vertices[rightFaceIndices[faceIndex] * 8 + 1] + y);
-                        mesh.GetVertices().push_back(vertices[rightFaceIndices[faceIndex] * 8 + 2] + z);
-
-                        float uvX = vertices[rightFaceIndices[faceIndex] * 8 + 3];
-                        float uvY = vertices[rightFaceIndices[faceIndex] * 8 + 4];
-
-                        mesh.GetVertices().push_back(glm::mix(textureUVs.x, textureUVs.z, uvX)); 
-                        mesh.GetVertices().push_back(glm::mix(textureUVs.y, textureUVs.w, uvY));
-
-                        mesh.GetVertices().push_back(vertices[rightFaceIndices[faceIndex] * 8 + 5]);
-                        mesh.GetVertices().push_back(vertices[rightFaceIndices[faceIndex] * 8 + 6]);
-                        mesh.GetVertices().push_back(vertices[rightFaceIndices[faceIndex] * 8 + 7]);
-                    }
-
-                    for(int i = 0; i < 6; i++){
-                        mesh.GetIndices().push_back(baseVertex + i);
-                    }
+                    BuildMesh(terrainMesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::RIGHT);
                 }
             }
 
-            if(x != 0){
+            if(blockX != 0){
                 if(BlockStorage::GetBlock(blocks[blockLeft])->GetType() == BlockType::AIR){
-                    glm::vec4 textureUVs = 
-                    TextureAtlasStorage::GetTexture("BaseAtlas")->GetUV(BlockStorage::GetBlock(blocks[i])->GetTextureId(BlockFace::LEFT));
-                    unsigned int baseVertex = mesh.GetVertices().size() / 8;
-                    //Need to loop over the indices in this case top face indices
-                    //Then need to add the vertices to the mesh with the position offset
-                    for(int faceIndex = 0; faceIndex < 6; faceIndex++){
-                        mesh.GetVertices().push_back(vertices[leftFaceIndices[faceIndex] * 8] + x);
-                        mesh.GetVertices().push_back(vertices[leftFaceIndices[faceIndex] * 8 + 1] + y);
-                        mesh.GetVertices().push_back(vertices[leftFaceIndices[faceIndex] * 8 + 2] + z);
-
-                        float uvX = vertices[leftFaceIndices[faceIndex] * 8 + 3];
-                        float uvY = vertices[leftFaceIndices[faceIndex] * 8 + 4];
-
-                        mesh.GetVertices().push_back(glm::mix(textureUVs.x, textureUVs.z, uvX)); 
-                        mesh.GetVertices().push_back(glm::mix(textureUVs.y, textureUVs.w, uvY));
-
-                        mesh.GetVertices().push_back(vertices[leftFaceIndices[faceIndex] * 8 + 5]);
-                        mesh.GetVertices().push_back(vertices[leftFaceIndices[faceIndex] * 8 + 6]);
-                        mesh.GetVertices().push_back(vertices[leftFaceIndices[faceIndex] * 8 + 7]);
-                    }
-
-                    for(int i = 0; i < 6; i++){
-                        mesh.GetIndices().push_back(baseVertex + i);
-                    }
+                    BuildMesh(terrainMesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::LEFT);
                 }
             }
             else{
@@ -325,7 +254,7 @@ void Chunk::BuildMesh(glm::vec3 pos){
                 if(neighbourChunk != nullptr){
                     //now that I have the neighbouring chunk need to get the block thats next to the current block
                     //z = width - 1 
-                    neighbourBlockIndex = (width - 1) + (z * width) + (width * width * y);
+                    neighbourBlockIndex = (width - 1) + (blockZ * width) + (width * width * blockY);
                     neighbourBlock = BlockStorage::GetBlock(neighbourChunk->blocks[neighbourBlockIndex]);
                 }
                 else{
@@ -333,62 +262,14 @@ void Chunk::BuildMesh(glm::vec3 pos){
                 }
 
                 if(neighbourBlock->GetType() == BlockType::AIR){
-                    glm::vec4 textureUVs = 
-                    TextureAtlasStorage::GetTexture("BaseAtlas")->GetUV(BlockStorage::GetBlock(blocks[i])->GetTextureId(BlockFace::LEFT));
-                    unsigned int baseVertex = mesh.GetVertices().size() / 8;
-                    //Need to loop over the indices in this case top face indices
-                    //Then need to add the vertices to the mesh with the position offset
-                    for(int faceIndex = 0; faceIndex < 6; faceIndex++){
-                        mesh.GetVertices().push_back(vertices[leftFaceIndices[faceIndex] * 8] + x);
-                        mesh.GetVertices().push_back(vertices[leftFaceIndices[faceIndex] * 8 + 1] + y);
-                        mesh.GetVertices().push_back(vertices[leftFaceIndices[faceIndex] * 8 + 2] + z);
-
-                        float uvX = vertices[leftFaceIndices[faceIndex] * 8 + 3];
-                        float uvY = vertices[leftFaceIndices[faceIndex] * 8 + 4];
-
-                        mesh.GetVertices().push_back(glm::mix(textureUVs.x, textureUVs.z, uvX)); 
-                        mesh.GetVertices().push_back(glm::mix(textureUVs.y, textureUVs.w, uvY));
-
-                        mesh.GetVertices().push_back(vertices[leftFaceIndices[faceIndex] * 8 + 5]);
-                        mesh.GetVertices().push_back(vertices[leftFaceIndices[faceIndex] * 8 + 6]);
-                        mesh.GetVertices().push_back(vertices[leftFaceIndices[faceIndex] * 8 + 7]);
-                    }
-
-                    for(int i = 0; i < 6; i++){
-                        mesh.GetIndices().push_back(baseVertex + i);
-                    }
-
+                    BuildMesh(terrainMesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::LEFT);
                 }
             }
 
             //need to switch outer loop need to check if its on the edge and then check if the block is air switch
-
-            if(z != width - 1){
+            if(blockZ != width - 1){
                 if(BlockStorage::GetBlock(blocks[blockFront])->GetType() == BlockType::AIR){
-                    glm::vec4 textureUVs = 
-                    TextureAtlasStorage::GetTexture("BaseAtlas")->GetUV(BlockStorage::GetBlock(blocks[i])->GetTextureId(BlockFace::FRONT));
-                    unsigned int baseVertex = mesh.GetVertices().size() / 8;
-                    //Need to loop over the indices in this case top face indices
-                    //Then need to add the vertices to the mesh with the position offset
-                    for(int faceIndex = 0; faceIndex < 6; faceIndex++){
-                        mesh.GetVertices().push_back(vertices[frontFaceIndices[faceIndex] * 8] + x);
-                        mesh.GetVertices().push_back(vertices[frontFaceIndices[faceIndex] * 8 + 1] + y);
-                        mesh.GetVertices().push_back(vertices[frontFaceIndices[faceIndex] * 8 + 2] + z);
-
-                        float uvX = vertices[frontFaceIndices[faceIndex] * 8 + 3];
-                        float uvY = vertices[frontFaceIndices[faceIndex] * 8 + 4];
-
-                        mesh.GetVertices().push_back(glm::mix(textureUVs.x, textureUVs.z, uvX)); 
-                        mesh.GetVertices().push_back(glm::mix(textureUVs.y, textureUVs.w, uvY));
-
-                        mesh.GetVertices().push_back(vertices[frontFaceIndices[faceIndex] * 8 + 5]);
-                        mesh.GetVertices().push_back(vertices[frontFaceIndices[faceIndex] * 8 + 6]);
-                        mesh.GetVertices().push_back(vertices[frontFaceIndices[faceIndex] * 8 + 7]);
-                    }
-
-                    for(int i = 0; i < 6; i++){
-                        mesh.GetIndices().push_back(baseVertex + i);
-                    }
+                    BuildMesh(terrainMesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::FRONT);
                 }
             }
             else{
@@ -403,7 +284,7 @@ void Chunk::BuildMesh(glm::vec3 pos){
                 if(neighbourChunk != nullptr){
                     //now that I have the neighbouring chunk need to get the block thats next to the current block
                     //z = width - 1 
-                    neighbourBlockIndex = x + (0 * width) + (width * width * y);
+                    neighbourBlockIndex = blockX + (0 * width) + (width * width * blockY);
                     neighbourBlock = BlockStorage::GetBlock(neighbourChunk->blocks[neighbourBlockIndex]);
                 }
                 else{
@@ -412,59 +293,13 @@ void Chunk::BuildMesh(glm::vec3 pos){
 
                 //checks if the neighboyr block is air if so render face
                 if(neighbourBlock->GetType() == BlockType::AIR){
-                    glm::vec4 textureUVs = 
-                    TextureAtlasStorage::GetTexture("BaseAtlas")->GetUV(BlockStorage::GetBlock(blocks[i])->GetTextureId(BlockFace::BACK));
-                    unsigned int baseVertex = mesh.GetVertices().size() / 8;
-                    //Need to loop over the indices in this case top face indices
-                    //Then need to add the vertices to the mesh with the position offset
-                    for(int faceIndex = 0; faceIndex < 6; faceIndex++){
-                        mesh.GetVertices().push_back(vertices[frontFaceIndices[faceIndex] * 8] + x);
-                        mesh.GetVertices().push_back(vertices[frontFaceIndices[faceIndex] * 8 + 1] + y);
-                        mesh.GetVertices().push_back(vertices[frontFaceIndices[faceIndex] * 8 + 2] + z);
-
-                        float uvX = vertices[backFaceIndices[faceIndex] * 8 + 3];
-                        float uvY = vertices[backFaceIndices[faceIndex] * 8 + 4];
-
-                        mesh.GetVertices().push_back(glm::mix(textureUVs.x, textureUVs.z, uvX)); 
-                        mesh.GetVertices().push_back(glm::mix(textureUVs.y, textureUVs.w, uvY));
-
-                        mesh.GetVertices().push_back(vertices[frontFaceIndices[faceIndex] * 8 + 5]);
-                        mesh.GetVertices().push_back(vertices[frontFaceIndices[faceIndex] * 8 + 6]);
-                        mesh.GetVertices().push_back(vertices[frontFaceIndices[faceIndex] * 8 + 7]);
-                    }
-
-                    for(int i = 0; i < 6; i++){
-                        mesh.GetIndices().push_back(baseVertex + i);
-                    }  
+                    BuildMesh(terrainMesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::FRONT);
                 }
             }
  
-            if(z != 0){
+            if(blockZ != 0){
                 if(BlockStorage::GetBlock(blocks[blockBack])->GetType() == BlockType::AIR){
-                    glm::vec4 textureUVs = 
-                    TextureAtlasStorage::GetTexture("BaseAtlas")->GetUV(BlockStorage::GetBlock(blocks[i])->GetTextureId(BlockFace::BACK));
-                    unsigned int baseVertex = mesh.GetVertices().size() / 8;
-                    //Need to loop over the indices in this case top face indices
-                    //Then need to add the vertices to the mesh with the position offset
-                    for(int faceIndex = 0; faceIndex < 6; faceIndex++){
-                        mesh.GetVertices().push_back(vertices[backFaceIndices[faceIndex] * 8] + x);
-                        mesh.GetVertices().push_back(vertices[backFaceIndices[faceIndex] * 8 + 1] + y);
-                        mesh.GetVertices().push_back(vertices[backFaceIndices[faceIndex] * 8 + 2] + z);
-
-                        float uvX = vertices[backFaceIndices[faceIndex] * 8 + 3];
-                        float uvY = vertices[backFaceIndices[faceIndex] * 8 + 4];
-
-                        mesh.GetVertices().push_back(glm::mix(textureUVs.x, textureUVs.z, uvX)); 
-                        mesh.GetVertices().push_back(glm::mix(textureUVs.y, textureUVs.w, uvY));
-
-                        mesh.GetVertices().push_back(vertices[backFaceIndices[faceIndex] * 8 + 5]);
-                        mesh.GetVertices().push_back(vertices[backFaceIndices[faceIndex] * 8 + 6]);
-                        mesh.GetVertices().push_back(vertices[backFaceIndices[faceIndex] * 8 + 7]);
-                    }
-
-                    for(int i = 0; i < 6; i++){
-                        mesh.GetIndices().push_back(baseVertex + i);
-                    }
+                    BuildMesh(terrainMesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::BACK);
                 }
             }
             else{
@@ -479,7 +314,7 @@ void Chunk::BuildMesh(glm::vec3 pos){
                 if(neighbourChunk != nullptr){
                     //now that I have the neighbouring chunk need to get the block thats next to the current block
                     //z = width - 1 
-                    neighbourBlockIndex = x + ((width - 1) * width) + (width * width * y);
+                    neighbourBlockIndex = blockX + ((width - 1) * width) + (width * width * blockY);
                     neighbourBlock = BlockStorage::GetBlock(neighbourChunk->blocks[neighbourBlockIndex]);
                 }
                 else{
@@ -488,36 +323,50 @@ void Chunk::BuildMesh(glm::vec3 pos){
 
                 //checks if the neighboyr block is air if so render face
                 if(neighbourBlock->GetType() == BlockType::AIR){
-                    glm::vec4 textureUVs = 
-                    TextureAtlasStorage::GetTexture("BaseAtlas")->GetUV(BlockStorage::GetBlock(blocks[i])->GetTextureId(BlockFace::BACK));
-                    unsigned int baseVertex = mesh.GetVertices().size() / 8;
-                    //Need to loop over the indices in this case top face indices
-                    //Then need to add the vertices to the mesh with the position offset
-                    for(int faceIndex = 0; faceIndex < 6; faceIndex++){
-                        mesh.GetVertices().push_back(vertices[backFaceIndices[faceIndex] * 8] + x);
-                        mesh.GetVertices().push_back(vertices[backFaceIndices[faceIndex] * 8 + 1] + y);
-                        mesh.GetVertices().push_back(vertices[backFaceIndices[faceIndex] * 8 + 2] + z);
-
-                        float uvX = vertices[backFaceIndices[faceIndex] * 8 + 3];
-                        float uvY = vertices[backFaceIndices[faceIndex] * 8 + 4];
-
-                        mesh.GetVertices().push_back(glm::mix(textureUVs.x, textureUVs.z, uvX)); 
-                        mesh.GetVertices().push_back(glm::mix(textureUVs.y, textureUVs.w, uvY));
-
-                        mesh.GetVertices().push_back(vertices[backFaceIndices[faceIndex] * 8 + 5]);
-                        mesh.GetVertices().push_back(vertices[backFaceIndices[faceIndex] * 8 + 6]);
-                        mesh.GetVertices().push_back(vertices[backFaceIndices[faceIndex] * 8 + 7]);
-                    }
-
-                    for(int i = 0; i < 6; i++){
-                        mesh.GetIndices().push_back(baseVertex + i);
-                    }  
+                    BuildMesh(terrainMesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::BACK);
                 }
             }
         }
     }
 
     isGenerated = true;
+}
+
+
+//Two types of block models: cullable and non cullable
+//non cullable: use all the faces no matter what so the mesh will loop through all faces and add it to the mesh
+//cullable:: will use the mesh system of using each face and checking the neighbouring blocks
+//block models using this must follow the mesh guide lines in blender with having six meshes for each side
+//and naming them accordingly
+//This will be in one function and the chunkBuildMesh Will call it
+void Chunk::BuildMesh(Mesh& mesh, BlockMesh* blockMesh, int block, glm::vec3 blockPos, BlockFace blockFace){
+    std::vector<float> vertices = blockMesh->GetVertices();
+    std::vector<unsigned int> faceIndices = blockMesh->GetFaceIndices(blockFace);
+    //loop through each face and build the model
+    glm::vec4 textureUVs = 
+    TextureAtlasStorage::GetTexture("BaseAtlas")->GetUV(BlockStorage::GetBlock(block)->GetTextureId(blockFace));
+    unsigned int baseVertex = mesh.GetVertices().size() / 8;
+    //Need to loop over the indices in this case top face indices
+    //Then need to add the vertices to the mesh with the position offset
+    for(int faceIndex = 0; faceIndex < 6; faceIndex++){
+        mesh.GetVertices().push_back(vertices[faceIndices[faceIndex] * 8] + blockPos.x);
+        mesh.GetVertices().push_back(vertices[faceIndices[faceIndex] * 8 + 1] + blockPos.y);
+        mesh.GetVertices().push_back(vertices[faceIndices[faceIndex] * 8 + 2] + blockPos.z);
+
+        float uvX = vertices[faceIndices[faceIndex] * 8 + 3];
+        float uvY = vertices[faceIndices[faceIndex] * 8 + 4];
+
+        mesh.GetVertices().push_back(glm::mix(textureUVs.x, textureUVs.z, uvX)); 
+        mesh.GetVertices().push_back(glm::mix(textureUVs.y, textureUVs.w, uvY));
+
+        mesh.GetVertices().push_back(vertices[faceIndices[faceIndex] * 8 + 5]);
+        mesh.GetVertices().push_back(vertices[faceIndices[faceIndex] * 8 + 6]);
+        mesh.GetVertices().push_back(vertices[faceIndices[faceIndex] * 8 + 7]);
+    }
+
+    for(int i = 0; i < 6; i++){
+        mesh.GetIndices().push_back(baseVertex + i);
+    }  
 }
 
 void Chunk::UpdateChunk(glm::vec3 pos){
@@ -575,8 +424,8 @@ void Chunk::SetIsGenerated(bool isGenerated){
     this->isGenerated = isGenerated;
 }
 
-Mesh& Chunk::GetMesh(){
-    return mesh;
+Mesh& Chunk::GetTerrainMesh(){
+    return terrainMesh;
 }
 
 std::vector<ushort>& Chunk::GetBlocks(){
