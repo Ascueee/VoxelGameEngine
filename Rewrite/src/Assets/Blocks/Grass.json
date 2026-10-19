@@ -2,5 +2,6 @@
     "name": "Grass",
     "id": 7,
     "textureIds": [7,6,6,6,6,6],
-    "blockType": "Solid"
+    "blockType": "Solid",
+    "cullable": true
 }

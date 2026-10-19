@@ -2,5 +2,6 @@
     "name": "FoliageGrass",
     "id": 8,
     "textureIds": [8,8,8,8,8,8],
-    "blockType": "Foliage"
+    "blockType": "Foliage",
+    "cullable": false
 }

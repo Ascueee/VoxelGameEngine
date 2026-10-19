@@ -1,0 +1,7 @@
+{
+    "name": "DeadBush",
+    "id": 9,
+    "textureIds": [9,9,9,9,9,9],
+    "blockType": "Foliage",
+    "cullable": false
+}

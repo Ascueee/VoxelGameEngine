@@ -27,6 +27,10 @@ std::vector<unsigned int>& BlockMesh::GetFaceIndices(BlockFace face){
     else if(face == BlockFace::BACK)
         return faceIndices.at("Back");
     else{
-        return  faceIndices.at("Top");
+        return faceIndices.at("Top");
     }
+}
+
+std::unordered_map<std::string, std::vector<unsigned int>>& BlockMesh::GetFaceMap(){
+    return faceIndices;
 }

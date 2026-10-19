@@ -45,10 +45,6 @@ void WorldGenerator::GenerateWorld(glm::vec3 pos){
             glm::vec3 offSet = glm::vec3(center.x + x * 16.0f, 0.0f, center.z + y * 16.0f);
             Chunk* chunk = nullptr;
             std::ifstream file;
-            //need to create temp and wetness noise here
-            //then send the biome to chunk which will change the frequency and have a multiplier to the noise
-            int worldX = center.x + x;
-            int worldZ = center.z + y;
 
             //Checks if the chunks is already in the dictionary if so continue to the next chunk
             if(chunks.find(offSet) != chunks.end() && firstRun == false){
@@ -85,21 +81,19 @@ void WorldGenerator::GenerateWorld(glm::vec3 pos){
     }
 
     for (auto& [offSet, currentChunk] : chunks) {
-        // 1. Build the chunk mesh
-        // (Use 'currentChunk' or 'currentChunk.BuildMesh(offSet)' depending on your Chunk method signature)
+        //Build the chunk mesh
         currentChunk.BuildChunkMesh(offSet); 
 
-        // 2. Load the mesh into the renderer
-        // Pass 'currentChunk' directly instead of doing a map lookup via chunks.at(...)
-
-        //ChunkRenderer::LoadMesh(currentChunk);
+        //Load the mesh into the renderer
         Renderer::LoadMesh(currentChunk.GetTerrainMesh());
+        Renderer::LoadMesh(currentChunk.GetFoliageMesh());
+        DebugRenderer::LoadAABB(currentChunk.GetDebugMesh());
     }
 
     firstRun = false;
 }
 
-void WorldGenerator::RenderWorld(glm::vec3 pos){
+void WorldGenerator::RenderWorld(glm::vec3 pos, int fbWidth, int fbHeight){
     glm::vec3 center(std::floor(pos.x / 16.0f) * 16.0f, 0.0f, std::floor(pos.z / 16.0f) * 16.0f);
     
     //need to check for the min x and max x and if the offSet is at that bounds load the new chunks
@@ -115,6 +109,8 @@ void WorldGenerator::RenderWorld(glm::vec3 pos){
         GenerateWorld(pos);
     }
 
+    Renderer::InitializeGeometryPass();
+    //Deferred pass of the renderer
     for(int x = -renderDistance; x < renderDistance; x++){
         for(int y = -renderDistance; y < renderDistance; y++){
             glm::vec3 offSet = glm::vec3(lastPosition.x + x * 16.0f, 0.0f, lastPosition.z + y * 16.0f);
@@ -128,14 +124,25 @@ void WorldGenerator::RenderWorld(glm::vec3 pos){
 
                 //ChunkRenderer::LoadMesh(chunks.at(offSet));
                 Renderer::LoadMesh(chunks.at(offSet).GetTerrainMesh());
+                Renderer::LoadMesh(chunks.at(offSet).GetFoliageMesh());
             }
-
             //ChunkRenderer::Draw(chunks.at(offSet));
+            //passes the geometry to the geometrypass of the renderer
             Renderer::GeometryPass(chunks.at(offSet).GetTerrainMesh(), chunks.at(offSet).GetPosition());
-            //then do the renderer forward pass with the mesh
             //std::cout << "[World Generator] Drawing Chunks \n"; 
         }
     }
+
+    //renders to screen quad
+    //then do the renderer forward pass with the mesh
+    Renderer::DeferredPass(fbWidth, fbHeight);
+    Renderer::InitializeForwardPass(fbWidth, fbHeight);
+    //do the forward pass in here for each chunk
+    for (auto& chunk : chunks){
+        Renderer::ForwardPass(chunk.second.GetFoliageMesh(), chunk.second.GetPosition());
+        DebugRenderer::DrawAABB(chunk.second.GetDebugMesh(), chunk.second.GetCollider());
+    }
+
 }
 
 Chunk* WorldGenerator::GetChunk(glm::vec3 chunkPos){

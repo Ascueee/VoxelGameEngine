@@ -17,7 +17,7 @@ void BlockStorage::Load(){
         nlohmann::json data;
         file >> data;
         Block block = Block(data["name"].get<std::string>(), data["id"].get<int>(), 
-        data["textureIds"].get<std::vector<unsigned int>>(), data["blockType"].get<BlockType>());
+        data["textureIds"].get<std::vector<unsigned int>>(), data["blockType"].get<BlockType>(), data["cullable"].get<bool>());
 
         std::cout << "[Block Storage] Loaded {" << data["name"].get<std::string>() << "} \n";
         blocks.emplace(data["id"].get<int>(), block);

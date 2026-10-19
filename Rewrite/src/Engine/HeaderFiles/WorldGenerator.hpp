@@ -2,10 +2,10 @@
 #include <unordered_map>
 #include <glm/glm.hpp>
 #include "Chunk.hpp"
-#include <ChunkRenderer.hpp>
 #include <Renderer.hpp>
 #include <BiomeStorage.hpp>
 #include <filesystem>
+#include <DebugRenderer.hpp>
 
 struct Vec3Hash {
     std::size_t operator()(const glm::vec3& v) const {
@@ -22,7 +22,7 @@ class WorldGenerator{
         WorldGenerator();
         static void Load(glm::vec3 pos);
         static void GenerateWorld(glm::vec3 pos);
-        static void RenderWorld(glm::vec3 pos);
+        static void RenderWorld(glm::vec3 pos, int fbWidth, int fbHeight);
         static Chunk* GetChunk(glm::vec3 chunkpos);
     private:
         static std::unordered_map<glm::vec3, Chunk, Vec3Hash> chunks;

@@ -23,7 +23,7 @@ enum BlockFace{
 
 class Block{
     public:
-        Block(std::string name, unsigned int id, std::vector<unsigned int> textureIds, BlockType type);
+        Block(std::string name, unsigned int id, std::vector<unsigned int> textureIds, BlockType type, bool isCullable);
         void SetPosition(glm::vec3 position);
         void SetId(unsigned int id);
         std::string& GetName();
@@ -31,9 +31,11 @@ class Block{
         unsigned int& GetTextureId(BlockFace face);
         glm::vec3 GetPosition();
         BlockType& GetType();
+        bool IsCullable();
     private:
         std::string name;
         unsigned int id;
         std::vector<unsigned int> textureIds;
         BlockType type;
+        bool isCullable = true;
 };

@@ -2,5 +2,6 @@
     "name": "Cobblestone",
     "id": 2,
     "textureIds": [1,1,1,1,1,1],
-    "blockType": "Solid"
+    "blockType": "Solid",
+    "cullable": true
 }
