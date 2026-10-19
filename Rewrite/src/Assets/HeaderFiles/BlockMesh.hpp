@@ -11,6 +11,7 @@ class BlockMesh{
         std::vector<float>& GetVertices();
         std::vector<unsigned int>& GetFaceIndices(std::string face);
         std::vector<unsigned int>& GetFaceIndices(BlockFace face);
+        std::unordered_map<std::string, std::vector<unsigned int>>& GetFaceMap();
     private:
         std::vector<float> vertices;
         //the key will be the meshname in blender(NAMES NEED TO BE: TOP,BOTTOM,RIGHT,LEFT,FRONT,BACK) for chunkmeshing

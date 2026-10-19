@@ -56,13 +56,14 @@ class Renderer{
         static void LoadMesh(Mesh& mesh);
         static void LoadGBuffer();
         static void InitializeGeometryPass();
+        static void InitializeForwardPass(float screenWidth, float screenHeight);
         static void GeometryPass(Mesh& mesh, glm::vec3 position);
-        static void RenderPass(float screenWidth, float screenHeight);
-        static void ForwardPass(float screenWidth, float screenHeight);
+        static void DeferredPass(float screenWidth, float screenHeight);
+        static void ForwardPass(Mesh& mesh, glm::vec3 position);
         static void InitializeIds();
         static void Delete(Mesh& mesh);
     private:
-        static Shader shader;
+        static Shader forwardPass;
         static Shader geometryPass;
         static Shader renderPass;
         static Camera* camera;

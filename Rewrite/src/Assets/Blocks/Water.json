@@ -2,5 +2,6 @@
     "name": "Water",
     "id": 4,
     "textureIds": [3,3,3,3,3,3],
-    "blockType": "Liquid"
+    "blockType": "Liquid",
+    "cullable": true
 }

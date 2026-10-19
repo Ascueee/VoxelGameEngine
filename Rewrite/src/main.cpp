@@ -12,6 +12,7 @@
 #include <TextureAtlasStorage.hpp>
 #include <BlockStorage.hpp>
 #include <BlockModelStorage.hpp>
+#include <DebugRenderer.hpp>
 
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -81,6 +82,7 @@ int main()
 
     //ChunkRenderer::Load(&camera);
     Renderer::Load(&camera);
+    DebugRenderer::Load(&camera);
     BiomeStorage::Load();
     TextureAtlasStorage::Load();
     BlockStorage::Load();
@@ -107,13 +109,7 @@ int main()
         glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
 
         processInput(window, camera);
-
-        Renderer::InitializeGeometryPass();
-        WorldGenerator::RenderWorld(camera.GetPosition() / 4.0f);
-        //renders to screen quad
-        Renderer::RenderPass(fbWidth, fbHeight);
-        Renderer::ForwardPass(fbWidth, fbHeight);
-
+        WorldGenerator::RenderWorld(camera.GetPosition() / 4.0f, fbWidth, fbHeight);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

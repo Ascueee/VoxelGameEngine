@@ -1,6 +1,6 @@
 #include <Renderer.hpp>
 
-Shader Renderer::shader;
+Shader Renderer::forwardPass;
 Shader Renderer::geometryPass;
 Shader Renderer::renderPass;
 Camera* Renderer::camera;
@@ -10,8 +10,8 @@ std::queue<ushort> Renderer::rendererIds;
 Renderer::Renderer(){}
 
 void Renderer::Load(Camera* cam){
-    shader = Shader("/Users/hayyan/Desktop/Repos/CPPEngine/Rewrite/src/Assets/Shaders/base.vert",
-        "/Users/hayyan/Desktop/Repos/CPPEngine/Rewrite/src/Assets/Shaders/base.frag");
+    forwardPass = Shader("/Users/hayyan/Desktop/Repos/CPPEngine/Rewrite/src/Assets/Shaders/ForwardPass.vert",
+        "/Users/hayyan/Desktop/Repos/CPPEngine/Rewrite/src/Assets/Shaders/ForwardPass.frag");
     geometryPass = Shader("/Users/hayyan/Desktop/Repos/CPPEngine/Rewrite/src/Assets/Shaders/GeometryPass.vert",
         "/Users/hayyan/Desktop/Repos/CPPEngine/Rewrite/src/Assets/Shaders/GeometryPass.frag");
     renderPass = Shader("/Users/hayyan/Desktop/Repos/CPPEngine/Rewrite/src/Assets/Shaders/RenderPass.vert",
@@ -112,8 +112,8 @@ void Renderer::LoadGBuffer(){
 void Renderer::InitializeGeometryPass(){
     glBindFramebuffer(GL_FRAMEBUFFER, gBuffer.handle);
     glViewport(0, 0, 1280, 720);
-    glEnable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
 }
 
 void Renderer::GeometryPass(Mesh& mesh, glm::vec3 position){
@@ -140,7 +140,7 @@ void Renderer::GeometryPass(Mesh& mesh, glm::vec3 position){
     glDrawElements(GL_TRIANGLES, mesh.GetIndices().size(), GL_UNSIGNED_INT, 0);
 }
 
-void Renderer::RenderPass(float screenWidth, float screenHeight){
+void Renderer::DeferredPass(float screenWidth, float screenHeight){
     glBindVertexArray(renderQuad.renderQuadVAO);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, screenWidth, screenHeight);
@@ -186,7 +186,36 @@ void Renderer::RenderPass(float screenWidth, float screenHeight){
     glEnable(GL_DEPTH_TEST);
 }
 
-void Renderer::ForwardPass(float screenWidth, float screenHeight){
+void Renderer::InitializeForwardPass(float screenWidth, float screenHeight){
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer.handle);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glBlitFramebuffer(0, 0, 1280, 720, 0, 0, screenWidth, screenHeight, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Renderer::ForwardPass(Mesh& mesh, glm::vec3 position){
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBindVertexArray(mesh.GetVAO());
+
+    //set up the shader here
+    forwardPass.Use();
+    float blockSize = 4;
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, position * blockSize);
+    model = glm::scale(model, glm::vec3(blockSize));
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, TextureAtlasStorage::GetTexture("BaseAtlas")->GetHandle());
+    forwardPass.setInt("diffuse", 0);
+
+    forwardPass.setMat4("view", camera->GetView());
+    forwardPass.setMat4("projection", camera->GetProjection());
+    forwardPass.setMat4("model", model);
+
+    glDrawElements(GL_TRIANGLES, mesh.GetIndices().size(), GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
+    glDisable(GL_BLEND);
 }
 
 //fill the id que with all the ids
@@ -200,9 +229,6 @@ void Renderer::Delete(Mesh& mesh){
     glDeleteBuffers(1, &mesh.GetVBO());
     glDeleteVertexArrays(1, &mesh.GetVAO());
     glDeleteBuffers(1, &mesh.GetEBO());
-
-    //delete it from renderer mesh list and put the id back in the queue
-
 }
 
 

@@ -15,6 +15,7 @@
 #include <fstream>
 #include <filesystem>
 #include <sstream>
+#include <AABB.hpp>
 
 //A chunk is a portion of terain which holds blocks
 // chunkPosition - where the chunk is in the world
@@ -34,18 +35,24 @@ class Chunk{
         void SaveChunk();
         void LoadChunk(std::ifstream& file);
         Mesh& GetTerrainMesh();
+        Mesh& GetFoliageMesh();
+        Mesh& GetDebugMesh();
+        AABB* GetCollider();
         std::vector<ushort>& GetBlocks();
-        glm::vec3& GetPosition();
+        glm::vec3 GetPosition();
         bool GetIsGenerated();
     private:
         unsigned int width = 16;
         unsigned int height = 256;
         glm::vec3 position;
         std::vector<ushort> blocks;
+        AABB collider;
         //Chunk stores block events per each block in the chunk by their id in the blocks array
         //Then it saves the blocks index in the blocks and also all the events the block has
         std::unordered_map<int, std::function<void(Chunk&, int)>> blockEvents;
         Mesh terrainMesh;
+        Mesh foliageMesh;
+        Mesh debugMesh;
         bool isGenerated = false;
         FastNoise islandness;
         FastNoise mountainess;

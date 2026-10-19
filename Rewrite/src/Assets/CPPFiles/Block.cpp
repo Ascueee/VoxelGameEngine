@@ -1,10 +1,11 @@
 #include "Block.hpp"
 
-Block::Block(std::string name, unsigned int id, std::vector<unsigned int> textureIds, BlockType type){
+Block::Block(std::string name, unsigned int id, std::vector<unsigned int> textureIds, BlockType type, bool isCullable){
     this->name = name;
     this->id = id;
     this->textureIds = textureIds;
     this->type = type;
+    this->isCullable = isCullable;
 }
 
 void Block::SetId(unsigned int id){
@@ -24,6 +25,10 @@ unsigned int& Block::GetTextureId(BlockFace face){
 
 BlockType& Block::GetType(){
     return type;
+}
+
+bool Block::IsCullable(){
+    return isCullable;
 }
 
 

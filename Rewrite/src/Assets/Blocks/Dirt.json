@@ -2,5 +2,6 @@
     "name": "Dirt",
     "id": 1,
     "textureIds": [0,0,0,0,0,0],
-    "blockType": "Solid"
+    "blockType": "Solid",
+    "cullable": true
 }

@@ -49,7 +49,6 @@ add_executable(A_Pirates_Tale
 
     src/Engine/CPPFiles/Entity.cpp
     src/Engine/CPPFiles/Chunk.cpp
-    src/Engine/CPPFiles/ChunkRenderer.cpp
     src/Engine/CPPFiles/Renderer.cpp
     src/Engine/CPPFiles/WorldGenerator.cpp
     src/Engine/CPPFiles/BiomeStorage.cpp
@@ -58,6 +57,8 @@ add_executable(A_Pirates_Tale
     src/Engine/CPPFiles/BlockModelStorage.cpp
     src/Engine/CPPFiles/BlockEvents.cpp
     src/Engine/CPPFiles/Camera.cpp
+    src/Engine/CPPFiles/AABB.cpp
+    src/Engine/CPPFiles/DebugRenderer.cpp
 
     src/Assets/CPPFiles/Mesh.cpp
     src/Assets/CPPFiles/Shader.cpp

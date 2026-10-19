@@ -3,7 +3,7 @@
 
 Chunk::Chunk(){}
 
-Chunk::Chunk(glm::vec3 position){
+Chunk::Chunk(glm::vec3 position) : collider(position + glm::vec3(8, 128, 8), glm::vec3(16, 256, 16)){
     this->position = position;
     blocks.resize(width * height * width, (ushort)BlockStorage::GetBlock(0)->GetId());
     islandness.SetNoiseType(FastNoise::Perlin);
@@ -31,6 +31,7 @@ void Chunk::BuildChunk(glm::vec3 pos){
     Biome* previousBiome;
     int previousHeight;
 
+    //terrain pass
     for(int i = 0; i < blocks.size(); i++){
         int x = i % width;
         int y = i / (width * width);
@@ -137,7 +138,6 @@ void Chunk::BuildChunk(glm::vec3 pos){
         //then only use those blocks for the foliage check
         int maxHeight = 50 + biome->GetIslandness() + 15;
         int blockBelow = i - width * width;
-
         //checks if the current block is on the surface and also if the current block is not air foliage can only spawn on air
         if(y > maxHeight || y < 50)
             continue;
@@ -149,6 +149,10 @@ void Chunk::BuildChunk(glm::vec3 pos){
         int worldX = position.x + x;
         int worldZ = position.z + z;
 
+        float temperatureNoise = ((tempreture.GetNoise(worldX, worldZ) + 1.0f) * 0.5f) * 100.0f;
+        float wetnessNoise = ((wetness.GetNoise(worldX, worldZ) + 1.0f) * 0.5f) * 100.0f;
+        biome = BiomeStorage::GetBiomeByTempAndWetness(glm::vec2(temperatureNoise, wetnessNoise));
+
         float foliageNoise = ((tempreture.GetNoise(worldX, worldZ) + 1.0f) * 0.5f) * 100.0f;
 
         //place the foliage block here using the biome to get the specific one needed to decorate the biome
@@ -158,6 +162,7 @@ void Chunk::BuildChunk(glm::vec3 pos){
 
     //Tree passs: where the trees will be generated
     //will use a tree builder
+
 
     //Structure Stage
     //this is where general structures will be generated that are found in the biome
@@ -170,12 +175,21 @@ void Chunk::BuildChunkMesh(glm::vec3 pos){
     terrainMesh.GetVertices().clear();
     terrainMesh.GetIndices().clear();
 
+    foliageMesh.GetVertices().clear();
+    foliageMesh.GetIndices().clear();
     //Vertex Layout: position 3, UVs 2(the uvs represent an index to the vec4 when creating the vertices)
     for(int i = 0; i < blocks.size(); i++){
         int currentBlock = blocks[i];
         int blockX = i % width;
         int blockY = i / (width * width);
         int blockZ = (i / width) % width;
+
+        Mesh* meshPtr = &terrainMesh;
+        if(BlockStorage::GetBlock(currentBlock)->GetType() == BlockType::FOLIAGE){
+            meshPtr = &foliageMesh;
+        }
+
+        Mesh& mesh = *meshPtr;
 
         //checks if the current block is solid
         //if its solid generate the block mesh
@@ -193,24 +207,51 @@ void Chunk::BuildChunkMesh(glm::vec3 pos){
             int blockBack  = i - width; 
 
             //gets the block model to use in the meshing process
-            BlockMesh* blockMesh = BlockModelStorage::GetBlockModel("Cube.obj");
+            BlockMesh* blockMesh;
+            if(BlockStorage::GetBlock(blocks[i])->GetType() == BlockType::FOLIAGE)
+                blockMesh = BlockModelStorage::GetBlockModel("Grass.obj");
+            else
+                blockMesh = BlockModelStorage::GetBlockModel("Cube.obj");
+
+            //Check if its not a cullable block build all the faces
+            if(BlockStorage::GetBlock(currentBlock)->IsCullable() == false){
+                //build the mesh with all its faces
+                for (auto& face : blockMesh->GetFaceMap()){
+                    if(face.first == "Top")
+                        BuildMesh(mesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::TOP);
+                    else if(face.first == "Bottom")
+                        BuildMesh(mesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::BOTTOM);
+                    else if(face.first == "Right")
+                        BuildMesh(mesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::RIGHT);
+                    else if(face.first == "Left")
+                        BuildMesh(mesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::LEFT);
+                    else if(face.first == "Right")
+                        BuildMesh(mesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::FRONT);
+                    else if(face.first == "Back")
+                        BuildMesh(mesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::BACK);
+                }
+                //skip the rest because the mesh is already built
+                continue;
+            }
 
             //need to cull the side of the chunks by checking neighbouring chunks
             //if the neighbouring block on the neighburing chunk is air render the mesh
             //also only do this check on the edge blocks of the chunk
-
             //Front and Back
-            if(blockY == height - 1 || BlockStorage::GetBlock(blocks[blockAbove])->GetType() == BlockType::AIR){
-                BuildMesh(terrainMesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::TOP);
+            if(blockY == height - 1 || BlockStorage::GetBlock(blocks[blockAbove])->GetType() == BlockType::AIR
+                || BlockStorage::GetBlock(blocks[blockAbove])->GetType() == BlockType::FOLIAGE){
+                BuildMesh(mesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::TOP);
             }
 
-            if(blockY == 0 || BlockStorage::GetBlock(blocks[blockBelow])->GetType() == BlockType::AIR){
-                BuildMesh(terrainMesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::BOTTOM);
+            if(blockY == 0 || BlockStorage::GetBlock(blocks[blockBelow])->GetType() == BlockType::AIR
+                || BlockStorage::GetBlock(blocks[blockBelow])->GetType() == BlockType::FOLIAGE){
+                BuildMesh(mesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::BOTTOM);
             }
 
             if(blockX != width - 1){
-                if(BlockStorage::GetBlock(blocks[blockRight])->GetType() == BlockType::AIR){
-                    BuildMesh(terrainMesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::RIGHT);
+                if(BlockStorage::GetBlock(blocks[blockRight])->GetType() == BlockType::AIR
+                 || BlockStorage::GetBlock(blocks[blockRight])->GetType() == BlockType::FOLIAGE){
+                    BuildMesh(mesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::RIGHT);
                 }
             }
             else{
@@ -232,14 +273,15 @@ void Chunk::BuildChunkMesh(glm::vec3 pos){
                     neighbourBlock = BlockStorage::GetBlock(blocks[i]);
                 }
 
-                if(neighbourBlock->GetType() == BlockType::AIR){
-                    BuildMesh(terrainMesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::RIGHT);
+                if(neighbourBlock->GetType() == BlockType::AIR || neighbourBlock->GetType() == BlockType::FOLIAGE){
+                    BuildMesh(mesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::RIGHT);
                 }
             }
 
             if(blockX != 0){
-                if(BlockStorage::GetBlock(blocks[blockLeft])->GetType() == BlockType::AIR){
-                    BuildMesh(terrainMesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::LEFT);
+                if(BlockStorage::GetBlock(blocks[blockLeft])->GetType() == BlockType::AIR
+                    || BlockStorage::GetBlock(blocks[blockLeft])->GetType() == BlockType::FOLIAGE){
+                    BuildMesh(mesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::LEFT);
                 }
             }
             else{
@@ -261,15 +303,16 @@ void Chunk::BuildChunkMesh(glm::vec3 pos){
                     neighbourBlock = BlockStorage::GetBlock(blocks[i]);
                 }
 
-                if(neighbourBlock->GetType() == BlockType::AIR){
-                    BuildMesh(terrainMesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::LEFT);
+                if(neighbourBlock->GetType() == BlockType::AIR || neighbourBlock->GetType() == BlockType::FOLIAGE){
+                    BuildMesh(mesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::LEFT);
                 }
             }
 
             //need to switch outer loop need to check if its on the edge and then check if the block is air switch
             if(blockZ != width - 1){
-                if(BlockStorage::GetBlock(blocks[blockFront])->GetType() == BlockType::AIR){
-                    BuildMesh(terrainMesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::FRONT);
+                if(BlockStorage::GetBlock(blocks[blockFront])->GetType() == BlockType::AIR
+                    || BlockStorage::GetBlock(blocks[blockFront])->GetType() == BlockType::FOLIAGE){
+                    BuildMesh(mesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::FRONT);
                 }
             }
             else{
@@ -292,14 +335,15 @@ void Chunk::BuildChunkMesh(glm::vec3 pos){
                 }
 
                 //checks if the neighboyr block is air if so render face
-                if(neighbourBlock->GetType() == BlockType::AIR){
-                    BuildMesh(terrainMesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::FRONT);
+                if(neighbourBlock->GetType() == BlockType::AIR || neighbourBlock->GetType() == BlockType::FOLIAGE){
+                    BuildMesh(mesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::FRONT);
                 }
             }
  
             if(blockZ != 0){
-                if(BlockStorage::GetBlock(blocks[blockBack])->GetType() == BlockType::AIR){
-                    BuildMesh(terrainMesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::BACK);
+                if(BlockStorage::GetBlock(blocks[blockBack])->GetType() == BlockType::AIR
+                    || BlockStorage::GetBlock(blocks[blockBack])->GetType() == BlockType::FOLIAGE){
+                    BuildMesh(mesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::BACK);
                 }
             }
             else{
@@ -322,8 +366,8 @@ void Chunk::BuildChunkMesh(glm::vec3 pos){
                 }
 
                 //checks if the neighboyr block is air if so render face
-                if(neighbourBlock->GetType() == BlockType::AIR){
-                    BuildMesh(terrainMesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::BACK);
+                if(neighbourBlock->GetType() == BlockType::AIR || neighbourBlock->GetType() == BlockType::FOLIAGE){
+                    BuildMesh(mesh, blockMesh, currentBlock, glm::vec3(blockX,blockY,blockZ), BlockFace::BACK);
                 }
             }
         }
@@ -370,11 +414,11 @@ void Chunk::BuildMesh(Mesh& mesh, BlockMesh* blockMesh, int block, glm::vec3 blo
 }
 
 void Chunk::UpdateChunk(glm::vec3 pos){
-    auto events = blockEvents; 
-    for (auto& event : events)
-    {
-       event.second(*this, event.first);
-    }
+    //auto events = blockEvents; 
+    // for (auto& event : events)
+    // {
+    //    event.second(*this, event.first);
+    // }
 }
 
 //Only save blocks that are not 
@@ -419,7 +463,6 @@ void Chunk::SubscribeBlockEvent(int blockIndex, std::function<void(Chunk&, int)>
     blockEvents.emplace(blockIndex, event);
 }
 
-
 void Chunk::SetIsGenerated(bool isGenerated){
     this->isGenerated = isGenerated;
 }
@@ -428,11 +471,23 @@ Mesh& Chunk::GetTerrainMesh(){
     return terrainMesh;
 }
 
+Mesh& Chunk::GetFoliageMesh(){
+    return foliageMesh;
+}
+
+Mesh& Chunk::GetDebugMesh(){
+    return debugMesh;
+}
+
+AABB* Chunk::GetCollider(){
+    return &collider;
+}
+
 std::vector<ushort>& Chunk::GetBlocks(){
     return blocks;
 }
 
-glm::vec3& Chunk::GetPosition(){
+glm::vec3 Chunk::GetPosition(){
     return position;
 }
 

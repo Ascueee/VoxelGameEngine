@@ -1,7 +1,7 @@
 {
     "name": "BaseAtlas",
     "width": 48,
-    "height": 48,
+    "height": 64,
     "size": 16,
     "path": "/Users/hayyan/Desktop/Repos/CPPEngine/Rewrite/src/Assets/Textures/BaseAtlas.png"
 }
