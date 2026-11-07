@@ -82,7 +82,7 @@ void DebugRenderer::LoadAABB(Mesh& mesh){
 }
 
 
-void DebugRenderer::DrawAABB(Mesh& mesh, AABB* aabb){
+void DebugRenderer::DrawAABB(Mesh& mesh, AABB* aabb, glm::vec3 color){
     glBindVertexArray(mesh.GetVAO());
     shader.Use();
 
@@ -100,7 +100,7 @@ void DebugRenderer::DrawAABB(Mesh& mesh, AABB* aabb){
     shader.setMat4("projection", camera->GetProjection());
     shader.setMat4("model", model);
 
-    shader.setVec3("color", glm::vec3(1,0,1));
+    shader.setVec3("color", color);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glDrawElements(GL_LINES, mesh.GetIndices().size(), GL_UNSIGNED_INT, 0);

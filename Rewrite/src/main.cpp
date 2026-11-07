@@ -13,6 +13,8 @@
 #include <BlockStorage.hpp>
 #include <BlockModelStorage.hpp>
 #include <DebugRenderer.hpp>
+#include <TreeBuilder.hpp>
+#include <StructureStorage.hpp>
 
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -80,13 +82,14 @@ int main()
     glEnable(GL_DEPTH_TEST);
     Camera camera = Camera(glm::vec3(1000,400, 0));
 
-    //ChunkRenderer::Load(&camera);
     Renderer::Load(&camera);
     DebugRenderer::Load(&camera);
     BiomeStorage::Load();
     TextureAtlasStorage::Load();
     BlockStorage::Load();
     BlockModelStorage::Load();
+    TreeBuilder::Load();
+    StructureStorage::Load();
 
     Entity player = Entity("Player");
     player.Load();

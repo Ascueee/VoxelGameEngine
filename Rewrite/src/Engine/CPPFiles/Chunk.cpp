@@ -3,7 +3,7 @@
 
 Chunk::Chunk(){}
 
-Chunk::Chunk(glm::vec3 position) : collider(position + glm::vec3(8, 128, 8), glm::vec3(16, 256, 16)){
+Chunk::Chunk(glm::vec3 position){
     this->position = position;
     blocks.resize(width * height * width, (ushort)BlockStorage::GetBlock(0)->GetId());
     islandness.SetNoiseType(FastNoise::Perlin);
@@ -31,14 +31,21 @@ void Chunk::BuildChunk(glm::vec3 pos){
     Biome* previousBiome;
     int previousHeight;
 
+    glm::vec3 size(width, height, width);
+    glm::vec3 centerPos = pos + size * 0.5f;
+    glm::vec3 colliderSize = glm::vec3(width, height, width);
+    broadPhaseData.aabb = AABB(centerPos, colliderSize);
+    //DebugRenderer::LoadAABB(broadPhaseData.aabb.GetMesh());
+
+    //TODO: ADD TERRAIN BUILDER CLASS
     //terrain pass
     for(int i = 0; i < blocks.size(); i++){
         int x = i % width;
         int y = i / (width * width);
         int z = (i / width) % width;
 
-        int worldX = position.x + x;
-        int worldZ = position.z + z;
+        float worldX = position.x + x;
+        float worldZ = position.z + z;
 
         float temperatureNoise = ((tempreture.GetNoise(worldX, worldZ) + 1.0f) * 0.5f) * 100.0f;
         float wetnessNoise = ((wetness.GetNoise(worldX, worldZ) + 1.0f) * 0.5f) * 100.0f;
@@ -146,8 +153,8 @@ void Chunk::BuildChunk(glm::vec3 pos){
         if(BlockStorage::GetBlock(blocks[blockBelow])->GetType() != BlockType::SOLID)
             continue;
 
-        int worldX = position.x + x;
-        int worldZ = position.z + z;
+        float worldX = position.x + x;
+        float worldZ = position.z + z;
 
         float temperatureNoise = ((tempreture.GetNoise(worldX, worldZ) + 1.0f) * 0.5f) * 100.0f;
         float wetnessNoise = ((wetness.GetNoise(worldX, worldZ) + 1.0f) * 0.5f) * 100.0f;
@@ -160,15 +167,40 @@ void Chunk::BuildChunk(glm::vec3 pos){
         blocks[i] = BlockStorage::GetBlock(decorationBlock)->GetId();
     }
 
-    //Tree passs: where the trees will be generated
-    //will use a tree builder
-
-
-    //Structure Stage
     //this is where general structures will be generated that are found in the biome
     //will use a structure builder
-    
     SaveChunk();
+}
+
+void Chunk::BuildTrees(){
+
+    //Structure Builder Pass
+    //Tree passs: where the trees will be generated
+    //will use a tree builder
+    for(int i = 0; i < blocks.size(); i++){
+        int x = i % width;
+        int y = i / (width * width);
+        int z = (i / width) % width;
+
+        int maxHeight = 50 + biome->GetIslandness() + 15;
+        int blockBelow = i - width * width;
+        //checks if the current block is on the surface and also if the current block is not air foliage can only spawn on air
+        if(y > maxHeight || y < 50)
+            continue;
+        
+        if(BlockStorage::GetBlock(blocks[i])->GetType() != BlockType::AIR)
+            continue;
+        if(BlockStorage::GetBlock(blocks[blockBelow])->GetType() != BlockType::SOLID)
+            continue;
+        if(BlockStorage::GetBlock(blocks[blockBelow])->GetId() == 10)
+            continue;
+        
+        float worldX = position.x + x;
+        float worldY = position.y + y;
+        float worldZ = position.z + z;
+
+        TreeBuilder::InitializeStructure(worldX, worldY, worldZ, position);
+    }
 }
 
 void Chunk::BuildChunkMesh(glm::vec3 pos){
@@ -414,6 +446,10 @@ void Chunk::BuildMesh(Mesh& mesh, BlockMesh* blockMesh, int block, glm::vec3 blo
 }
 
 void Chunk::UpdateChunk(glm::vec3 pos){
+    //DebugRenderer::DrawAABB(broadPhaseData.aabb.GetMesh(), &broadPhaseData.aabb, glm::vec3(0,1,0));
+    // for(auto& aabb : broadPhaseData.insideAABBs){
+    //     DebugRenderer::DrawAABB(aabb.GetMesh(), &aabb, glm::vec3(1,0,1));
+    // }
     //auto events = blockEvents; 
     // for (auto& event : events)
     // {
@@ -455,7 +491,6 @@ void Chunk::LoadChunk(std::ifstream& file){
 void Chunk::PlaceBlock(glm::vec3 pos, unsigned int id){
     int blockIndex = pos.x + width * (pos.z + width * pos.y);
     blocks[blockIndex] = (ushort)BlockStorage::GetBlock(id)->GetId();
-    SubscribeBlockEvent(blockIndex, BlockEvents::LiquidBlock);
     isGenerated = false; 
 }
 
@@ -475,14 +510,6 @@ Mesh& Chunk::GetFoliageMesh(){
     return foliageMesh;
 }
 
-Mesh& Chunk::GetDebugMesh(){
-    return debugMesh;
-}
-
-AABB* Chunk::GetCollider(){
-    return &collider;
-}
-
 std::vector<ushort>& Chunk::GetBlocks(){
     return blocks;
 }
@@ -493,4 +520,8 @@ glm::vec3 Chunk::GetPosition(){
 
 bool Chunk::GetIsGenerated(){
     return isGenerated;
+}
+
+ChunkAABB* Chunk::GetChunkAABB(){
+    return &broadPhaseData;
 }

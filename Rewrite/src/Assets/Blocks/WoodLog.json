@@ -1,0 +1,7 @@
+{
+    "name": "WoodLog",
+    "id": 10,
+    "textureIds": [11,11,10,10,10,10],
+    "blockType": "Solid",
+    "cullable": true
+}

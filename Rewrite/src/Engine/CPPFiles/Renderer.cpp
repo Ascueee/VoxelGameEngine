@@ -175,7 +175,7 @@ void Renderer::DeferredPass(float screenWidth, float screenHeight){
 
     renderPass.setVec3("pointLights[0].position", camera->GetPosition());
     renderPass.setVec3("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
-    renderPass.setVec3("pointLights[0].diffuse", 1.0f, 0.0f, 0.0f);
+    renderPass.setVec3("pointLights[0].diffuse", 0.0f, 1.0f, 0.0f);
     renderPass.setVec3("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
     renderPass.setFloat("pointLights[0].constant", 1.0f);
     renderPass.setFloat("pointLights[0].linear", 0.0f);
