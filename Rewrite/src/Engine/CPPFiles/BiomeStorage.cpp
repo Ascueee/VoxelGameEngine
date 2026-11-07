@@ -17,11 +17,12 @@ void BiomeStorage::Load(){
         nlohmann::json data;
         file >> data;
 
+        //TODO: CHANGE THIS LIKE STRUCTURE STOAGE AND MAKE IT SETTER FOR READABILITY
         Biome biome = Biome(data["name"].get<std::string>(), data["WorldGeneration"]["biomeTemp"].get<float>(),
          data["WorldGeneration"]["biomeWetness"].get<float>(), data["WorldGeneration"]["islandness"].get<int>(),
           data["TerrainBlocks"]["blockPallet"].get<std::vector<int>>(), data["Decoration"]["foliageBlocks"].get<std::unordered_map<std::string, int>>());
         biomes.emplace(glm::vec2(data["WorldGeneration"]["biomeTemp"].get<float>(),data["WorldGeneration"]["biomeWetness"].get<float>()), biome);
-        std::cout << "[Biome Storage] Loading Biome: " << data["name"].get<std::string>() << ", " 
+        std::cout << "[Biome Storage] Loaded: " << data["name"].get<std::string>() << ", " 
         << data["WorldGeneration"]["islandness"].get<int>() << "\n";
    }
 }

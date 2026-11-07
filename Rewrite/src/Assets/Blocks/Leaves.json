@@ -1,0 +1,7 @@
+{
+    "name": "OakLeaves",
+    "id": 11,
+    "textureIds": [12,12,12,12,12,12],
+    "blockType": "Solid",
+    "cullable": true
+}

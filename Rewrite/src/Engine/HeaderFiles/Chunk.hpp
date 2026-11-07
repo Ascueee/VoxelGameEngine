@@ -3,19 +3,27 @@
 #include <glm/glm.hpp>
 #include <Block.hpp>
 #include <Mesh.hpp>
+#include <AABB.hpp>
 #include <Biome.hpp>
 #include <TextureAtlasStorage.hpp>
 #include <BlockStorage.hpp>
 #include <BiomeStorage.hpp>
 #include <BlockModelStorage.hpp>
+#include <DebugRenderer.hpp>
 #include <fastnoise/FastNoise.h>
+#include <TreeBuilder.hpp>
 #include <unordered_map>
 #include <functional>
 #include <BlockEvents.hpp>
 #include <fstream>
 #include <filesystem>
 #include <sstream>
-#include <AABB.hpp>
+
+struct ChunkAABB{
+    AABB aabb;
+    std::vector<AABB> insideAABBs;
+    Mesh debugMesh;
+};
 
 //A chunk is a portion of terain which holds blocks
 // chunkPosition - where the chunk is in the world
@@ -26,6 +34,7 @@ class Chunk{
         Chunk();
         Chunk(glm::vec3 position);
         void BuildChunk(glm::vec3 pos);
+        void BuildTrees();
         void BuildChunkMesh(glm::vec3 pos);
         void BuildMesh(Mesh& mesh, BlockMesh* blockMesh, int block, glm::vec3 blockPos, BlockFace blockFace);
         void UpdateChunk(glm::vec3 pos);
@@ -37,22 +46,20 @@ class Chunk{
         Mesh& GetTerrainMesh();
         Mesh& GetFoliageMesh();
         Mesh& GetDebugMesh();
-        AABB* GetCollider();
         std::vector<ushort>& GetBlocks();
         glm::vec3 GetPosition();
         bool GetIsGenerated();
+        ChunkAABB* GetChunkAABB();
     private:
         unsigned int width = 16;
         unsigned int height = 256;
         glm::vec3 position;
         std::vector<ushort> blocks;
-        AABB collider;
         //Chunk stores block events per each block in the chunk by their id in the blocks array
         //Then it saves the blocks index in the blocks and also all the events the block has
         std::unordered_map<int, std::function<void(Chunk&, int)>> blockEvents;
         Mesh terrainMesh;
         Mesh foliageMesh;
-        Mesh debugMesh;
         bool isGenerated = false;
         FastNoise islandness;
         FastNoise mountainess;
@@ -60,4 +67,5 @@ class Chunk{
         FastNoise wetness;
         FastNoise foliage;
         Biome* biome;
+        ChunkAABB broadPhaseData;
 };

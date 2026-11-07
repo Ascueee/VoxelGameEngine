@@ -28,8 +28,6 @@ void BlockModelStorage::Load(){
             return;
         }
 
-        std::cout << "[BlockModelStorage] Processing Model {" << entry.path().filename().string() << "} \n";
-
         std::string modelName = entry.path().filename().string();
 
         //Add A block mesh that represents the model
@@ -37,6 +35,8 @@ void BlockModelStorage::Load(){
 
         //Now need to process the node and load it into the block model mesh
         ProcessNode(scene->mRootNode, scene, modelName);
+        
+        std::cout << "[BlockModelStorage] Loaded Model {" << entry.path().filename().string() << "} \n";
     }
 }
 
