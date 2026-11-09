@@ -58,7 +58,7 @@ void TreeBuilder::InitializeStructure(float worldX, float worldY, float worldZ, 
             }
         }
 
-        BuildTree(blockPos, 15, structure);
+        BuildTree(blockPos, structure->GetHeight(), structure);
     }
 }
 
@@ -112,7 +112,7 @@ void TreeBuilder::BuildTree(glm::vec3 blockPos, int trunkLength, TreeStructure* 
             rules = TreeRules::GOBACK;
         }
 
-        BuildBranch(worldBlockPos, rules, true, 3, structure);
+        BuildBranch(worldBlockPos, rules, structure->GetCanBranch(), structure->GetWidth(), structure);
     }
 
     trunkLength = trunkLength - 1;
@@ -183,7 +183,7 @@ void TreeBuilder::BuildBranch(glm::vec3 blockPos, TreeRules rules, bool canBuild
     if(randomNum == 3 && canBuildBranch == true){
         canBuildBranch = false;
         //starts a new branch
-        BuildBranch(worldBlockPos, TreeRules::GOUP, 3, canBuildBranch, structure);
+        BuildBranch(worldBlockPos, TreeRules::GOUP, structure->GetWidth(), canBuildBranch, structure);
     }
 
     if(branchLength == 0){
@@ -191,7 +191,7 @@ void TreeBuilder::BuildBranch(glm::vec3 blockPos, TreeRules rules, bool canBuild
         BuildCanopy(worldBlockPos, structure);
     }
     
-    BuildBranch(worldBlockPos, rules, true, branchLength, structure);
+    BuildBranch(worldBlockPos, rules, canBuildBranch, branchLength, structure);
 }
 
 //using the tree json file build the canopy based on the block pattern saved
@@ -221,6 +221,6 @@ void TreeBuilder::BuildCanopy(glm::vec3 rootPos, TreeStructure* structure){
         int blockIndex = x + (z * width) + ((y) * width * width);
         Chunk* chunk = WorldGenerator::GetChunk(chunkOrigin);
         if(chunk != nullptr)
-            WorldGenerator::GetChunk(chunkOrigin)->GetBlocks()[blockIndex] = 11;
+            WorldGenerator::GetChunk(chunkOrigin)->GetBlocks()[blockIndex] = structure->GetLeavesId();
     }
 }

@@ -10,8 +10,16 @@ Biome::Biome(std::string name, float biomeTemp, float biomeWetness, int islandAn
     this->decorationPallet = decorationPallet;
 }
 
-int& Biome::GetIslandness(){
+void Biome::SetMountainess(float mountainess){
+    this->mountainess = mountainess;
+}
+
+float Biome::GetIslandness(){
     return islandness;
+}
+
+float Biome::GetMountainess(){
+    return mountainess;
 }
 
 float Biome::GetTemp(){

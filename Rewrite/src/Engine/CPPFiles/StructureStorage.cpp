@@ -22,7 +22,9 @@ void StructureStorage::Load(){
         structure.SetName(data["name"].get<std::string>());
         structure.SetWidth(data["Settings"]["width"].get<int>());
         structure.SetHeight(data["Settings"]["height"].get<int>());
-        structure.SetWoodId(data["Settings"]["woodId"].get<int>());
+        structure.SetWoodId(data["Settings"]["woodId"].get<ushort>());
+        structure.SetLeavesId(data["Settings"]["leavesId"].get<ushort>());
+        structure.SetCanBranch(data["Trunk"]["canBranch"].get<bool>()); 
         structure.SetBlocks(data["Canopy"]["blocks"].get<std::unordered_map<std::string, ushort>>());
 
         structures.emplace(structure.GetName(), structure);

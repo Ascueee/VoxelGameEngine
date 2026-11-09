@@ -9,16 +9,22 @@ class TreeStructure{
         void SetWidth(int width);
         void SetHeight(int height);
         void SetWoodId(unsigned int blockId);
+        void SetLeavesId(unsigned int blockId);
+        void SetCanBranch(bool canBranch);
         void SetBlocks(std::unordered_map<std::string, ushort> blocks);
         std::string GetName();
         std::unordered_map<std::string, ushort> GetBlocks();
         int GetWidth();
         int GetHeight();
-        int GetWoodBlockId();
+        ushort GetWoodBlockId();
+        ushort GetLeavesId();
+        bool GetCanBranch();
     private:
         std::string name;
         int width;
         int height;
-        int woodBlockId;
+        ushort woodBlockId;
+        ushort leavesBlockId;
+        bool canBranch;
         std::unordered_map<std::string, ushort> blocks;
 };
