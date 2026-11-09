@@ -21,6 +21,7 @@ void BiomeStorage::Load(){
         Biome biome = Biome(data["name"].get<std::string>(), data["WorldGeneration"]["biomeTemp"].get<float>(),
          data["WorldGeneration"]["biomeWetness"].get<float>(), data["WorldGeneration"]["islandness"].get<int>(),
           data["TerrainBlocks"]["blockPallet"].get<std::vector<int>>(), data["Decoration"]["foliageBlocks"].get<std::unordered_map<std::string, int>>());
+        biome.SetMountainess(data["WorldGeneration"]["mountainess"].get<float>());
         biomes.emplace(glm::vec2(data["WorldGeneration"]["biomeTemp"].get<float>(),data["WorldGeneration"]["biomeWetness"].get<float>()), biome);
         std::cout << "[Biome Storage] Loaded: " << data["name"].get<std::string>() << ", " 
         << data["WorldGeneration"]["islandness"].get<int>() << "\n";

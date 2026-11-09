@@ -63,6 +63,7 @@ class Chunk{
         bool isGenerated = false;
         FastNoise islandness;
         FastNoise mountainess;
+        FastNoise errosion;
         FastNoise tempreture;
         FastNoise wetness;
         FastNoise foliage;

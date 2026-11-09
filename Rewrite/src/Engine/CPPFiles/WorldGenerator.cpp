@@ -3,7 +3,7 @@
 //possible ideas so far: graph of chunks
 std::unordered_map<glm::vec3, Chunk, Vec3Hash> WorldGenerator::chunks;
 glm::vec3 WorldGenerator::lastPlayerPosition;
-int WorldGenerator::renderDistance = 12;
+int WorldGenerator::renderDistance = 25;
 bool WorldGenerator::firstRun = true;
 WorldGenerator::WorldGenerator(){}
 

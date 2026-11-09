@@ -3,7 +3,8 @@
     "WorldGeneration":{
         "biomeTemp": 66,
         "biomeWetness": 39,
-        "islandness": 100
+        "islandness": 90,
+        "mountainess": 130
     },
     "TerrainBlocks":{
         "blockPallet": [5,6]

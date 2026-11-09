@@ -8,23 +8,23 @@ Chunk::Chunk(glm::vec3 position){
     blocks.resize(width * height * width, (ushort)BlockStorage::GetBlock(0)->GetId());
     islandness.SetNoiseType(FastNoise::Perlin);
     islandness.SetSeed(12345);
-    islandness.SetFrequency(0.001);  
+    islandness.SetFrequency(0.01);  
 
     mountainess.SetNoiseType(FastNoise::Perlin);
     mountainess.SetSeed(12345 + 300);
-    mountainess.SetFrequency(0.1f);
+    mountainess.SetFrequency(0.001f);
 
     tempreture.SetNoiseType(FastNoise::Perlin);
     tempreture.SetSeed(12345 + 500);
-    tempreture.SetFrequency(0.01f); 
+    tempreture.SetFrequency(0.001f); 
     
     wetness.SetNoiseType(FastNoise::Perlin);
     wetness.SetSeed(12345 + 800);
-    wetness.SetFrequency(0.01f);  
+    wetness.SetFrequency(0.001f);  
 
     foliage.SetNoiseType(FastNoise::Perlin);
     foliage.SetSeed(12345 + 900);
-    foliage.SetFrequency(0.1f);
+    foliage.SetFrequency(0.01f);
 }
 
 void Chunk::BuildChunk(glm::vec3 pos){
@@ -53,7 +53,7 @@ void Chunk::BuildChunk(glm::vec3 pos){
         biome = BiomeStorage::GetBiomeByTempAndWetness(glm::vec2(temperatureNoise, wetnessNoise));
 
         //if the y is above the max height the terrain can generate dont generate noise
-        int maxHeight = 50 + biome->GetIslandness() + 15;
+        int maxHeight = 50 + biome->GetIslandness() + biome->GetMountainess();
         if(y > maxHeight)
             continue;
         else if(y < 50){
@@ -81,7 +81,8 @@ void Chunk::BuildChunk(glm::vec3 pos){
             BiomeStorage::GetBiomeByTempAndWetness(glm::vec2(tempreture.GetNoise(worldX, worldZ - 1),
              wetness.GetNoise(worldX, worldZ - 1)));
         
-        int terrainHeight = 50 + static_cast<int>(islandnessNoise * biome->GetIslandness()) + static_cast<int>(mountainNoise * 15);
+        int terrainHeight = 50 + static_cast<int>(islandnessNoise * biome->GetIslandness())
+         + static_cast<int>(mountainNoise * biome->GetMountainess());
 
         if(leftBlockBiome->GetName() != biome->GetName()){
             int leftBiomeHeight = 
