@@ -31,6 +31,23 @@ file(GLOB FASTNOISE_SOURCES
     "libs/fastnoise/*.c"
 )
 
+find_path(LUA_INCLUDE_DIR lua.h
+    PATHS
+        "${LUA_ROOT}/include/lua5.4"
+        /opt/homebrew/opt/lua@5.4/include/lua5.4
+    NO_DEFAULT_PATH
+    REQUIRED
+)
+
+find_library(LUA_LIBRARY
+    NAMES lua5.4 lua.5.4 lua
+    PATHS
+        "${LUA_ROOT}/lib"
+        /opt/homebrew/opt/lua@5.4/lib
+    NO_DEFAULT_PATH
+    REQUIRED
+)
+
 if(FASTNOISE_SOURCES)
     add_library(fastnoise STATIC ${FASTNOISE_SOURCES})
     target_include_directories(fastnoise PUBLIC
@@ -47,35 +64,46 @@ endif()
 add_executable(A_Pirates_Tale
     src/main.cpp
 
-    src/Engine/CPPFiles/Entity.cpp
-    src/Engine/CPPFiles/Chunk.cpp
-    src/Engine/CPPFiles/Renderer.cpp
-    src/Engine/CPPFiles/WorldGenerator.cpp
-    src/Engine/CPPFiles/BiomeStorage.cpp
-    src/Engine/CPPFiles/TextureAtlasStorage.cpp
-    src/Engine/CPPFiles/BlockStorage.cpp
-    src/Engine/CPPFiles/BlockModelStorage.cpp
-    src/Engine/CPPFiles/BlockEvents.cpp
-    src/Engine/CPPFiles/Camera.cpp
-    src/Engine/CPPFiles/AABB.cpp
-    src/Engine/CPPFiles/DebugRenderer.cpp
-    src/Engine/CPPFiles/TreeBuilder.cpp
-    src/Engine/CppFiles/StructureStorage.cpp
+    src/Engine/Entities/Entity.cpp
+    src/Engine/Entities/ScriptStorage.cpp
 
-    src/Assets/CPPFiles/Mesh.cpp
-    src/Assets/CPPFiles/Shader.cpp
-    src/Assets/CPPFiles/Biome.cpp
-    src/Assets/CPPFiles/Block.cpp
-    src/Assets/CPPFiles/TextureAtlas.cpp
-    src/Assets/CPPFiles/BlockMesh.cpp
-    src/Assets/CPPFiles/TreeStructure.cpp
+    src/Engine/EngineBlocks/Renderer.cpp
+    src/Engine/EngineBlocks/Mesh.cpp
+    src/Engine/EngineBlocks/Camera.cpp
+    src/Engine/EngineBlocks/AABB.cpp
+    src/Engine/EngineBlocks/DebugRenderer.cpp
+    src/Engine/EngineBlocks/TextureAtlasStorage.cpp
+    src/Engine/EngineBlocks/Shader.cpp
+    src/Engine/EngineBlocks/TextureAtlas.cpp
+    src/Engine/EngineBlocks/ModelStorage.cpp
+    src/Engine/EngineBlocks/Model.cpp
+
+    src/Engine/WorldGeneration/Chunk.cpp
+    src/Engine/WorldGeneration/WorldGenerator.cpp
+    src/Engine/WorldGeneration/BiomeStorage.cpp
+    src/Engine/WorldGeneration/BlockStorage.cpp
+    src/Engine/WorldGeneration/BlockModelStorage.cpp
+    src/Engine/WorldGeneration/BlockEvents.cpp
+    src/Engine/WorldGeneration/StructureStorage.cpp
+    src/Engine/WorldGeneration/TreeBuilder.cpp
+    src/Engine/WorldGeneration/Biome.cpp
+    src/Engine/WorldGeneration/Block.cpp
+    src/Engine/WorldGeneration/BlockMesh.cpp
+    src/Engine/WorldGeneration/TreeStructure.cpp
+
+    src/Engine/EngineBlocks/Packages/CameraController.cpp
+
+
 )
 
 target_include_directories(A_Pirates_Tale PRIVATE
     libs
     libs/fastnoise
-    src/Engine/HeaderFiles
-    src/Assets/HeaderFiles
+    src/Engine/EngineBlocks
+    src/Engine/EngineBlocks/Packages
+    src/Engine/WorldGeneration
+    src/Engine/Entities
+    ${LUA_INCLUDE_DIR}
 )
 
 target_link_libraries(A_Pirates_Tale PRIVATE
@@ -83,7 +111,8 @@ target_link_libraries(A_Pirates_Tale PRIVATE
     glfw
     assimp
     fastnoise
-)
+    ${LUA_LIBRARY}
+    )
 
 if(APPLE)
 
