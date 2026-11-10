@@ -2,42 +2,51 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
-#include <nlohmann/json.hpp>
-#include <assimp/Importer.hpp>
-#include <FastNoise.h>
-#include "Entity.hpp"
+#include <Entity.hpp>
 #include <Camera.hpp>
 #include <WorldGenerator.hpp>
 #include <BiomeStorage.hpp>
 #include <TextureAtlasStorage.hpp>
 #include <BlockStorage.hpp>
 #include <BlockModelStorage.hpp>
+#include <ModelStorage.hpp>
 #include <DebugRenderer.hpp>
 #include <TreeBuilder.hpp>
 #include <StructureStorage.hpp>
+#include <ScriptStorage.hpp>
+#include <sol/sol.hpp>
+#include <Transform.hpp>
+#include <CameraController.hpp>
+#include <MeshController.hpp>
 
+//ENGINE NOTES:
+//THIS IS A VOXEL GAME ENGINE
+//THERE ARE TWO MAIN PARTS TO THE ENGINE
+//VOXEL WORLD GENERATOR: Chunks, Blocks, structures
+//ENTITIES: Game objects thay interact with the world terrain(Player, NPC, Monster, Animal, etc)
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow *window, Camera& cam){
-    const float cameraSpeed = 0.5f; // adjust accordingly
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cam.SetPosition(cam.GetPosition() + cameraSpeed * cam.GetFront());
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cam.SetPosition(cam.GetPosition() - cameraSpeed * cam.GetFront());
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cam.SetPosition(cam.GetPosition() - glm::normalize(glm::cross(cam.GetFront(), cam.GetUp())) * cameraSpeed);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cam.SetPosition(cam.GetPosition() + glm::normalize(glm::cross(cam.GetFront(), cam.GetUp())) * cameraSpeed);
+// void processInput(GLFWwindow *window, Camera& cam){
 
-    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-        cam.SetPosition(cam.GetPosition() + cameraSpeed * cam.GetUp());
+//     const float cameraSpeed = 0.5f; // adjust accordingly
+//     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+//         cam.SetPosition(cam.GetPosition() + cameraSpeed * cam.GetFront());
+//     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+//         cam.SetPosition(cam.GetPosition() - cameraSpeed * cam.GetFront());
+//     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+//         cam.SetPosition(cam.GetPosition() - glm::normalize(glm::cross(cam.GetFront(), cam.GetUp())) * cameraSpeed);
+//     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+//         cam.SetPosition(cam.GetPosition() + glm::normalize(glm::cross(cam.GetFront(), cam.GetUp())) * cameraSpeed);
 
-    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
-        cam.SetPosition(cam.GetPosition() - cameraSpeed * cam.GetUp());
-}
+//     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+//         cam.SetPosition(cam.GetPosition() + cameraSpeed * cam.GetUp());
+
+//     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+//         cam.SetPosition(cam.GetPosition() - cameraSpeed * cam.GetUp());
+// }
 
 int main()
 {
@@ -80,24 +89,35 @@ int main()
         return -1;
     }
     glEnable(GL_DEPTH_TEST);
-    Camera camera = Camera(glm::vec3(1000,400, 0));
 
-    Renderer::Load(&camera);
-    DebugRenderer::Load(&camera);
-    BiomeStorage::Load();
+    Renderer::Load();
+    //DebugRenderer::Load(&camera);
+    
     TextureAtlasStorage::Load();
     BlockStorage::Load();
+    BiomeStorage::Load();
     BlockModelStorage::Load();
-    TreeBuilder::Load();
+    ModelStorage::Load();
     StructureStorage::Load();
+    ScriptStorage::Load();
+    TreeBuilder::Load();
 
-    Entity player = Entity("Player");
+    sol::state lua;
+    Entity player = Entity();
+    player.SetName("Player");
+    player.AddPackage<Transform>();
+    player.AddPackage<CameraController>();
+    player.AddPackage<MeshController>();
+    player.GetPackage<Transform>()->position = glm::vec3(1000,400,30);
+    player.GetPackage<MeshController>()->mesh = ModelStorage::GetModel("Test")->GetMesh("Cone");
     player.Load();
     player.Update();
 
     //divides the camera position by blockSize to keep the position consistant with the world
-    WorldGenerator::GenerateWorld(camera.GetPosition() / 4.0f);
+    WorldGenerator::GenerateWorld(player.GetPackage<Transform>()->position / 4.0f);
 
+    Renderer::SetCamera(player.GetPackage<CameraController>());
+    Renderer::LoadMesh(*player.GetPackage<MeshController>()->mesh);
     Renderer::LoadGBuffer();
 
     while (!glfwWindowShouldClose(window))
@@ -111,8 +131,22 @@ int main()
         int fbWidth, fbHeight;
         glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
 
-        processInput(window, camera);
-        WorldGenerator::RenderWorld(camera.GetPosition() / 4.0f, fbWidth, fbHeight);
+        sol::protected_function_result result = ScriptStorage::GetScript("test")(&player);
+        if(!result.valid()){
+            sol::error err = result;
+            std::cout << "[Script] " << err.what() << "\n";
+        }
+
+        //processInput(window, camera);
+
+        Renderer::InitializeGeometryPass();
+        Renderer::GeometryPassEntity(*player.GetPackage<MeshController>()->mesh, player.GetPackage<Transform>());
+        WorldGenerator::DeferredRenderWorld(player.GetPackage<Transform>()->position / 4.0f, fbWidth, fbHeight);
+        Renderer::DeferredPass(fbWidth, fbHeight);
+        Renderer::InitializeForwardPass(fbWidth, fbHeight);
+        WorldGenerator::ForwardRenderPass();
+        Renderer::ForwardPassEntity(*player.GetPackage<MeshController>()->mesh, player.GetPackage<Transform>());
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
