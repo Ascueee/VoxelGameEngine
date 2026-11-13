@@ -61,8 +61,6 @@ void WorldGenerator::GenerateWorld(glm::vec3 pos){
 
     //mesh pass where mesh is generated
     for(auto& [offSet, currentChunk] : chunks) {
-        //TODO:loop through each chunk and build the trees and then build the mesh
-        //Change tree builder to fit and how trees generate
         //Build the chunk mesh
         currentChunk.BuildTrees();
         currentChunk.BuildChunkMesh(offSet); 
@@ -75,7 +73,7 @@ void WorldGenerator::GenerateWorld(glm::vec3 pos){
     firstRun = false;
 }
 
-void WorldGenerator::DeferredRenderWorld(glm::vec3 pos, int fbWidth, int fbHeight){
+void WorldGenerator::GeometryPass(glm::vec3 pos, int fbWidth, int fbHeight){
     glm::vec3 center(std::floor(pos.x / 16.0f) * 16.0f, 0.0f, std::floor(pos.z / 16.0f) * 16.0f);
     
     //need to check for the min x and max x and if the offSet is at that bounds load the new chunks
@@ -115,7 +113,7 @@ void WorldGenerator::DeferredRenderWorld(glm::vec3 pos, int fbWidth, int fbHeigh
     }
 }
 
-void WorldGenerator::ForwardRenderPass(){
+void WorldGenerator::ForwardPass(){
     //do the forward pass in here for each chunk
     for (auto& chunk : chunks){
         Renderer::ForwardPassChunk(chunk.second.GetFoliageMesh(), chunk.second.GetPosition());

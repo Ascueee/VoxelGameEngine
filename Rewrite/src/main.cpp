@@ -15,9 +15,13 @@
 #include <StructureStorage.hpp>
 #include <ScriptStorage.hpp>
 #include <sol/sol.hpp>
+
+//Packages
 #include <Transform.hpp>
 #include <CameraController.hpp>
-#include <MeshController.hpp>
+#include <ModelController.hpp>
+#include <EntityStorage.hpp>
+#include <Script.hpp>
 
 //ENGINE NOTES:
 //THIS IS A VOXEL GAME ENGINE
@@ -100,24 +104,27 @@ int main()
     ModelStorage::Load();
     StructureStorage::Load();
     ScriptStorage::Load();
+    EntityStorage::Load();
+
+    //World Generator Loads
     TreeBuilder::Load();
 
     sol::state lua;
-    Entity player = Entity();
-    player.SetName("Player");
-    player.AddPackage<Transform>();
-    player.AddPackage<CameraController>();
-    player.AddPackage<MeshController>();
-    player.GetPackage<Transform>()->position = glm::vec3(1000,400,30);
-    player.GetPackage<MeshController>()->mesh = ModelStorage::GetModel("Test")->GetMesh("Cone");
-    player.Load();
-    player.Update();
+    // EntityStorage::CreateEntity("Player");
+    // Entity* player = EntityStorage::GetEntity("Player");
+    // player->SetName("Player");
+    // player->AddPackage<CameraController>();
+    // player->AddPackage<Transform>();
+    // player->AddPackage<ModelController>();
+    // player->AddPackage<ScriptController>();
+    // player->GetPackage<ScriptController>()->script = ScriptStorage::GetScript("test");
+
+    EntityStorage::LoadEntities();
 
     //divides the camera position by blockSize to keep the position consistant with the world
-    WorldGenerator::GenerateWorld(player.GetPackage<Transform>()->position / 4.0f);
+    //WorldGenerator::GenerateWorld(EntityStorage::GetEntity("Player")->GetPackage<Transform>()->position / 4.0f);
 
-    Renderer::SetCamera(player.GetPackage<CameraController>());
-    Renderer::LoadMesh(*player.GetPackage<MeshController>()->mesh);
+    Renderer::SetCamera(EntityStorage::GetEntity("Player")->GetPackage<CameraController>());
     Renderer::LoadGBuffer();
 
     while (!glfwWindowShouldClose(window))
@@ -131,21 +138,18 @@ int main()
         int fbWidth, fbHeight;
         glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
 
-        sol::protected_function_result result = ScriptStorage::GetScript("test")(&player);
-        if(!result.valid()){
-            sol::error err = result;
-            std::cout << "[Script] " << err.what() << "\n";
-        }
-
         //processInput(window, camera);
 
+        EntityStorage::UpdateEntities();
+
         Renderer::InitializeGeometryPass();
-        Renderer::GeometryPassEntity(*player.GetPackage<MeshController>()->mesh, player.GetPackage<Transform>());
-        WorldGenerator::DeferredRenderWorld(player.GetPackage<Transform>()->position / 4.0f, fbWidth, fbHeight);
+        WorldGenerator::GeometryPass(EntityStorage::GetEntity("Player")->GetPackage<Transform>()->position / 4.0f, fbWidth, fbHeight);
+        EntityStorage::GeometryPass();
         Renderer::DeferredPass(fbWidth, fbHeight);
+
         Renderer::InitializeForwardPass(fbWidth, fbHeight);
-        WorldGenerator::ForwardRenderPass();
-        Renderer::ForwardPassEntity(*player.GetPackage<MeshController>()->mesh, player.GetPackage<Transform>());
+        WorldGenerator::ForwardPass();
+        EntityStorage::ForwardPass();
 
         glfwSwapBuffers(window);
         glfwPollEvents();

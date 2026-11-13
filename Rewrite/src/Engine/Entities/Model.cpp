@@ -17,3 +17,7 @@ Mesh* Model::GetMesh(std::string name){
         return &nodes["Cube"].mesh;
     }
 }
+
+std::unordered_map<std::string, ModelNode>* Model::GetNodes(){
+    return &nodes;
+}
