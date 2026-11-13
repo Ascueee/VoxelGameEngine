@@ -1,0 +1,5 @@
+{
+    "name": "Player",
+    "packages": ["Transform", "ModelController", "CameraController", "ScriptController"],
+    "script": "test"
+}

@@ -1,6 +1,15 @@
---test script which moves camera above sea level
-local entity = ...
+local entityManager = EntityManager.new()
+local modelStorage = ModelStorage.new()
 
---entity.transform.position = entity.transform.position + Vector3.new(0, 0, 0.1)
+function Load(entity)
+    print "[Script]Loading the script..."
 
-entity.camera.position = entity.transform.position + Vector3.new(0, 0, 20);
+    entity.transform.position = Vector3.new(1000,400,30)
+    entity.meshController.model = modelStorage:GetModel("Monkey")
+end
+
+function Update(entity)
+    --entity.transform.position = entity.transform.position + Vector3.new(0, 0, 0.1)
+
+    entity.camera.position = entity.transform.position + Vector3.new(0, 0, 10); 
+end

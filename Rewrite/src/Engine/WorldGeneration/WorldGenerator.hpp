@@ -20,8 +20,8 @@ class WorldGenerator{
         WorldGenerator();
         static void Load(glm::vec3 pos);
         static void GenerateWorld(glm::vec3 pos);
-        static void DeferredRenderWorld(glm::vec3 pos, int fbWidth, int fbHeight);
-        static void ForwardRenderPass();
+        static void GeometryPass(glm::vec3 pos, int fbWidth, int fbHeight);
+        static void ForwardPass();
         static void CreateChunk(glm::vec3 chunkPosition);
         static void LoadChunk(glm::vec3 chunkPosition);
         static Chunk* GetChunk(glm::vec3 chunkpos);

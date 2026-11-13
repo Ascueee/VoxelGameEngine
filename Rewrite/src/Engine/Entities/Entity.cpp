@@ -6,7 +6,6 @@ void Entity::SetName(std::string name){
     this->name = name;
 }
 
-
 std::string Entity::GetName(){
     return name;
 }

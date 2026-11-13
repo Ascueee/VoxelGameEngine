@@ -12,6 +12,8 @@ class Model{
         Model();
         void AddMesh(std::string name, Mesh mesh);
         Mesh* GetMesh(std::string name);
+        std::unordered_map<std::string, ModelNode>* GetNodes();
+
     private:
         std::unordered_map<std::string, ModelNode> nodes;
 

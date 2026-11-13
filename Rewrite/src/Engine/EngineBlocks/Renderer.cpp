@@ -191,7 +191,7 @@ void Renderer::DeferredPass(float screenWidth, float screenHeight){
     renderPass.setVec3("viewPos", camera->position);
     
     //set lighting shader vars
-    renderPass.setVec3("dirLight.direction", glm::vec3(-0.5f, -1.0f, -0.5f));
+    renderPass.setVec3("dirLight.direction", glm::normalize(glm::vec3(-0.7f, -0.7f, -0.5f)));
     renderPass.setVec3("dirLight.ambient", glm::vec3(0.7f));
     renderPass.setVec3("dirLight.diffuse", 1.0f, 1.0f, 1.0f);
     renderPass.setVec3("dirLight.specular", glm::vec3(0.8f));

@@ -66,6 +66,9 @@ add_executable(A_Pirates_Tale
 
     src/Engine/Entities/Entity.cpp
     src/Engine/Entities/ScriptStorage.cpp
+    src/Engine/Entities/EntityStorage.cpp
+    src/Engine/Entities/Script.cpp
+    src/Engine/Entities/Model.cpp
 
     src/Engine/EngineBlocks/Renderer.cpp
     src/Engine/EngineBlocks/Mesh.cpp
@@ -76,7 +79,7 @@ add_executable(A_Pirates_Tale
     src/Engine/EngineBlocks/Shader.cpp
     src/Engine/EngineBlocks/TextureAtlas.cpp
     src/Engine/EngineBlocks/ModelStorage.cpp
-    src/Engine/EngineBlocks/Model.cpp
+    
 
     src/Engine/WorldGeneration/Chunk.cpp
     src/Engine/WorldGeneration/WorldGenerator.cpp

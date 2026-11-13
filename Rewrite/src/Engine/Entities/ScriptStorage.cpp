@@ -1,7 +1,7 @@
 #include <ScriptStorage.hpp>
 
 sol::state ScriptStorage::luaReader;
-std::unordered_map<std::string, sol::protected_function> ScriptStorage::scripts;
+std::unordered_map<std::string, Script> ScriptStorage::scripts;
 ScriptStorage::ScriptStorage(){}
 
 void ScriptStorage::Load(){
@@ -12,8 +12,23 @@ void ScriptStorage::Load(){
         "Entity",
         sol::constructors<Entity()>(),
         "GetName",[](Entity& e){return e.GetName();},
+        "AddTransform",[](Entity& e){e.AddPackage<Transform>();},
         "transform", sol::property([](Entity& e){ return e.GetPackage<Transform>();}),
+        "AddMeshController",[](Entity& e){e.AddPackage<ModelController>();},
+        "meshController", sol::property([](Entity& e){ return e.GetPackage<ModelController>();}),
         "camera", sol::property([](Entity& e){ return e.GetPackage<CameraController>();})
+    );
+
+    luaReader.new_usertype<EntityStorage>(
+        "EntityManager",
+        sol::constructors<EntityStorage()>()
+    );
+
+
+    luaReader.new_usertype<ModelStorage>(
+        "ModelStorage",
+        sol::constructors<ModelStorage()>(),
+        "GetModel",[](ModelStorage& model, std::string name)-> Model* {return model.GetModel(name);}
     );
 
     luaReader.new_usertype<glm::vec3>(
@@ -25,10 +40,23 @@ void ScriptStorage::Load(){
         sol::meta_function::addition,    [](const glm::vec3& a, const glm::vec3& b){ return a + b; }
     );
 
+    luaReader.new_usertype<Model>(
+        "Model",
+        sol::constructors<Model()>(),
+        "AddMesh", &Model::AddMesh,
+        "GetMesh", &Model::GetMesh
+    );
+
     luaReader.new_usertype<Transform>(
         "Transform",
         sol::constructors<Transform()>(),
         "position", sol::property([](Transform* t){ return t->position; }, [](Transform* t, const glm::vec3& v){ t->position = v; })
+    );
+
+    luaReader.new_usertype<ModelController>(
+        "ModelController",
+        sol::constructors<ModelController()>(),
+        "model", sol::property([](ModelController& controller) -> Model* { return controller.model;}, [](ModelController& controller, Model* model) {controller.model = model;})
     );
 
     luaReader.new_usertype<CameraController>(
@@ -46,17 +74,23 @@ void ScriptStorage::Load(){
             continue;
         }
 
-        sol::protected_function script = luaReader.load_file(entry.path().string());
+        Script script;
+        luaReader.script_file(entry.path().string());
+        sol::protected_function luaScriptLoad = luaReader["Load"];
+        script.SetScriptLoad(luaScriptLoad);
+        sol::protected_function luaScriptUpdate = luaReader["Update"];
+        script.SetScriptUpdate(luaScriptUpdate);
+
         std::cout << "[Script Storage] Loading script {" << entry.path().stem().string() << "} \n";
         scripts.emplace(entry.path().stem().string(), script);
     }
 }
 
-sol::protected_function ScriptStorage::GetScript(std::string name){
+Script* ScriptStorage::GetScript(std::string name){
     if(scripts.count(name) > 0){
-        return scripts.at(name);
+        return &scripts.at(name);
     }
     else{
-        return scripts[0];
+        return &scripts[0];
     }
 }
