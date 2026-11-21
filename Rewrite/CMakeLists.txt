@@ -71,8 +71,8 @@ add_executable(A_Pirates_Tale
     src/Engine/Entities/Model.cpp
 
     src/Engine/EngineBlocks/Renderer.cpp
+    src/Engine/EngineBlocks/InputManager.cpp
     src/Engine/EngineBlocks/Mesh.cpp
-    src/Engine/EngineBlocks/Camera.cpp
     src/Engine/EngineBlocks/AABB.cpp
     src/Engine/EngineBlocks/DebugRenderer.cpp
     src/Engine/EngineBlocks/TextureAtlasStorage.cpp

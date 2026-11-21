@@ -148,7 +148,10 @@ void Renderer::GeometryPassEntity(Mesh& mesh, Transform* transform){
 
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, transform->position);
-    model = glm::scale(model, glm::vec3(1.0f));
+    model = glm::rotate(model, transform->rotation.x, glm::vec3(0, 1, 0));
+    model = glm::rotate(model, transform->rotation.y, glm::vec3(0, 0, 1));
+    model = glm::rotate(model, transform->rotation.z, glm::vec3(1, 0, 0));
+    model = glm::scale(model, transform->scale);
 
     //set texture
     glActiveTexture(GL_TEXTURE0);
@@ -191,14 +194,14 @@ void Renderer::DeferredPass(float screenWidth, float screenHeight){
     renderPass.setVec3("viewPos", camera->position);
     
     //set lighting shader vars
-    renderPass.setVec3("dirLight.direction", glm::normalize(glm::vec3(-0.7f, -0.7f, -0.5f)));
+    renderPass.setVec3("dirLight.direction", glm::normalize(glm::vec3(-0.7f, 0.7f, -0.5f)));
     renderPass.setVec3("dirLight.ambient", glm::vec3(0.7f));
     renderPass.setVec3("dirLight.diffuse", 1.0f, 1.0f, 1.0f);
     renderPass.setVec3("dirLight.specular", glm::vec3(0.8f));
 
     renderPass.setVec3("pointLights[0].position", camera->position);
     renderPass.setVec3("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
-    renderPass.setVec3("pointLights[0].diffuse", 1.0f, 0.0f, 0.0f);
+    renderPass.setVec3("pointLights[0].diffuse", 1.0f, 1.0f, 1.0f);
     renderPass.setVec3("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
     renderPass.setFloat("pointLights[0].constant", 1.0f);
     renderPass.setFloat("pointLights[0].linear", 0.0f);
@@ -250,7 +253,10 @@ void Renderer::ForwardPassEntity(Mesh& mesh, Transform* transform){
     forwardPass.Use();
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, transform->position);
-    model = glm::scale(model, glm::vec3(1.0f));
+    model = glm::rotate(model, transform->rotation.x, glm::vec3(0, 1, 0));
+    model = glm::rotate(model, transform->rotation.y, glm::vec3(0, 0, 1));
+    model = glm::rotate(model, transform->rotation.z, glm::vec3(1, 0, 0));
+    model = glm::scale(model, transform->scale);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, TextureAtlasStorage::GetTexture("BaseAtlas")->GetHandle());

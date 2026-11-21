@@ -9,6 +9,7 @@
 #include <Transform.hpp>
 #include <CameraController.hpp>
 #include <EntityStorage.hpp>
+#include <InputManager.hpp>
 #include <Mesh.hpp>
 #include <ModelController.hpp>
 #include <ModelStorage.hpp>
