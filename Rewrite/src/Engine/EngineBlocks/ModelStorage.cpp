@@ -39,7 +39,7 @@ void ModelStorage::Load(){
 void ModelStorage::ProcessNode(aiNode *node, const aiScene *scene, std::string modelName){
     Model& model = models[modelName];
     for(int i = 0; i < node->mNumMeshes; i++){
-        aiMesh* mesh = scene->mMeshes[i];
+        aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
         std::cout << "Processing Model Mesh {" << mesh->mName.C_Str() << "} \n";
         model.AddMesh(mesh->mName.C_Str(), ProcessMesh(mesh, scene, &model, mesh->mName.C_Str()));
     }

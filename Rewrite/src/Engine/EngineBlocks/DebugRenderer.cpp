@@ -1,14 +1,11 @@
 #include <DebugRenderer.hpp>
 
 Shader DebugRenderer::shader;
-Camera* DebugRenderer::camera;
 DebugRenderer::DebugRenderer(){}
 
-void DebugRenderer::Load(Camera* cam){
+void DebugRenderer::Load(){
     shader = Shader("/Users/hayyan/Desktop/Repos/CPPEngine/Rewrite/src/Assets/Shaders/Debug.vert",
         "/Users/hayyan/Desktop/Repos/CPPEngine/Rewrite/src/Assets/Shaders/Debug.frag");
-    
-    camera = cam;
 }
 
 //Load a cube mesh to represent an AABB
@@ -96,8 +93,7 @@ void DebugRenderer::DrawAABB(Mesh& mesh, AABB* aabb, glm::vec3 color){
     model = glm::translate(model, center * blockSize);
     model = glm::scale(model, size * blockSize);
     
-    shader.setMat4("view", camera->GetView());
-    shader.setMat4("projection", camera->GetProjection());
+    //need to add new view with camera package 
     shader.setMat4("model", model);
 
     shader.setVec3("color", color);

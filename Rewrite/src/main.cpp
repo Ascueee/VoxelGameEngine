@@ -3,7 +3,6 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <Entity.hpp>
-#include <Camera.hpp>
 #include <WorldGenerator.hpp>
 #include <BiomeStorage.hpp>
 #include <TextureAtlasStorage.hpp>
@@ -13,6 +12,7 @@
 #include <DebugRenderer.hpp>
 #include <TreeBuilder.hpp>
 #include <StructureStorage.hpp>
+#include <InputManager.hpp>
 #include <ScriptStorage.hpp>
 #include <sol/sol.hpp>
 
@@ -32,25 +32,6 @@ static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 }
-
-// void processInput(GLFWwindow *window, Camera& cam){
-
-//     const float cameraSpeed = 0.5f; // adjust accordingly
-//     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-//         cam.SetPosition(cam.GetPosition() + cameraSpeed * cam.GetFront());
-//     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-//         cam.SetPosition(cam.GetPosition() - cameraSpeed * cam.GetFront());
-//     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-//         cam.SetPosition(cam.GetPosition() - glm::normalize(glm::cross(cam.GetFront(), cam.GetUp())) * cameraSpeed);
-//     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-//         cam.SetPosition(cam.GetPosition() + glm::normalize(glm::cross(cam.GetFront(), cam.GetUp())) * cameraSpeed);
-
-//     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-//         cam.SetPosition(cam.GetPosition() + cameraSpeed * cam.GetUp());
-
-//     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
-//         cam.SetPosition(cam.GetPosition() - cameraSpeed * cam.GetUp());
-// }
 
 int main()
 {
@@ -82,6 +63,8 @@ int main()
 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetCursorPosCallback(window, InputManager::MousePosition);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // GLAD
     if (!gladLoadGLLoader(
@@ -95,6 +78,7 @@ int main()
     glEnable(GL_DEPTH_TEST);
 
     Renderer::Load();
+    InputManager::Load(window);
     //DebugRenderer::Load(&camera);
     
     TextureAtlasStorage::Load();
@@ -109,20 +93,10 @@ int main()
     //World Generator Loads
     TreeBuilder::Load();
 
-    sol::state lua;
-    // EntityStorage::CreateEntity("Player");
-    // Entity* player = EntityStorage::GetEntity("Player");
-    // player->SetName("Player");
-    // player->AddPackage<CameraController>();
-    // player->AddPackage<Transform>();
-    // player->AddPackage<ModelController>();
-    // player->AddPackage<ScriptController>();
-    // player->GetPackage<ScriptController>()->script = ScriptStorage::GetScript("test");
-
     EntityStorage::LoadEntities();
 
     //divides the camera position by blockSize to keep the position consistant with the world
-    //WorldGenerator::GenerateWorld(EntityStorage::GetEntity("Player")->GetPackage<Transform>()->position / 4.0f);
+    WorldGenerator::GenerateWorld(EntityStorage::GetEntity("Player")->GetPackage<Transform>()->position / 4.0f);
 
     Renderer::SetCamera(EntityStorage::GetEntity("Player")->GetPackage<CameraController>());
     Renderer::LoadGBuffer();
@@ -137,8 +111,6 @@ int main()
 
         int fbWidth, fbHeight;
         glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
-
-        //processInput(window, camera);
 
         EntityStorage::UpdateEntities();
 

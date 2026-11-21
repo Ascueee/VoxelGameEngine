@@ -37,7 +37,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, v
 
 void main(){
     vec3 fragPos = texture(gPosition, uv).rgb;
-    vec3 normal = texture(gNormal, uv).rgb; 
+    vec3 normal = normalize(texture(gNormal, uv).rgb);
     vec3 diffuse = texture(gDiffuse, uv).rgb;
 
     vec3 viewDir = normalize(viewPos - fragPos);
