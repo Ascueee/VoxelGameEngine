@@ -12,8 +12,8 @@ WorldGenerator::WorldGenerator(){}
 //Then need to check if the position is close to the bounds if so load chunks in render distance and delete the old chunks
 //World Generator needs to go through the renderdistance and add to 
 void WorldGenerator::GenerateWorld(glm::vec3 pos){
-    glm::vec3 center(std::floor(pos.x / 16.0f) * 16.0f, 0.0f, std::floor(pos.z / 16.0f) * 16.0f);
-    //glm::vec3 center = glm::vec3(pos.x / 16, 0.0, pos.z / 16);
+    //glm::vec3 posToChunkWorldPos = glm::vec3(pos.x / 16.0f, 0.0f, pos.z / 16.0f);
+    glm::vec3 center(std::floor(pos.x / 16.0f) * 16.0f, 0.0f, std::floor(pos.z/ 16.0f) * 16.0f);
     lastPlayerPosition = center;
     
     glm::vec3 chunkCullBoundsMin = glm::vec3(center.x - renderDistance * 16.0f, 0.0f, center.z - renderDistance * 16.0f);
@@ -105,7 +105,8 @@ void WorldGenerator::GeometryPass(glm::vec3 pos, int fbWidth, int fbHeight){
                 Renderer::LoadMesh(chunks.at(offSet).GetTerrainMesh());
                 Renderer::LoadMesh(chunks.at(offSet).GetFoliageMesh());
             }
-            //ChunkRenderer::Draw(chunks.at(offSet));
+
+            
             //passes the geometry to the geometrypass of the renderer
             Renderer::GeometryPassChunk(chunks.at(offSet).GetTerrainMesh(), chunks.at(offSet).GetPosition());
             //std::cout << "[World Generator] Drawing Chunks \n"; 

@@ -4,7 +4,7 @@ std::unordered_map<glm::vec2, Biome, Vec2Hash>  BiomeStorage::biomes;
 BiomeStorage::BiomeStorage(){}
 
 void BiomeStorage::Load(){
-    std::string folderPath = "/Users/hayyan/Desktop/Repos/CPPEngine/Rewrite/src/Assets/Biomes";
+    std::string folderPath = "/Users/hayyan/Desktop/Repos/CPPEngine/Rewrite/src/Assets/JsonFiles/Biomes";
 
    for (const auto& entry : std::filesystem::directory_iterator(folderPath)){
         std::ifstream file(entry.path());

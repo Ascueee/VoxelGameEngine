@@ -1,13 +1,11 @@
 #include <TextureAtlasStorage.hpp>
-#define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
 std::unordered_map<std::string, TextureAtlas> TextureAtlasStorage::textures;
-
 TextureAtlasStorage::TextureAtlasStorage(){}
 
 void TextureAtlasStorage::Load(){
-    std::string folderPath = "/Users/hayyan/Desktop/Repos/CPPEngine/Rewrite/src/Assets/TextureJson";
+    std::string folderPath = "/Users/hayyan/Desktop/Repos/CPPEngine/Rewrite/src/Assets/JsonFiles/AtlasTextures";
     for (const auto& entry : std::filesystem::directory_iterator(folderPath)){
         std::ifstream file(entry.path());
 
@@ -20,7 +18,9 @@ void TextureAtlasStorage::Load(){
         file >> data;
         //Created the texture
         glm::ivec2 textureResolution = glm::ivec2(data["width"].get<int>(), data["height"].get<int>());
-        TextureAtlas atlas = TextureAtlas(data["name"].get<std::string>(), textureResolution, data["size"].get<int>());
+        TextureAtlas atlas = TextureAtlas(textureResolution, data["size"].get<int>());
+        atlas.SetName(data["name"].get<std::string>());
+        atlas.SetType(data["type"].get<TextureType>());
 
         //Need to load it to openGL
         glGenTextures(1, &atlas.GetHandle());
@@ -28,12 +28,10 @@ void TextureAtlasStorage::Load(){
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         int width, height, nrChannels;
-
         unsigned char *textureData = stbi_load(data["path"].get<std::string>().c_str(), &width, &height, &nrChannels, 0);
 
         if (textureData)

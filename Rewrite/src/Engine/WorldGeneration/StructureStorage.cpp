@@ -4,7 +4,7 @@ std::unordered_map<std::string, TreeStructure> StructureStorage::structures;
 StructureStorage::StructureStorage(){}
 
 void StructureStorage::Load(){
-    std::string folderPath = "/Users/hayyan/Desktop/Repos/CPPEngine/Rewrite/src/Assets/Structures";
+    std::string folderPath = "/Users/hayyan/Desktop/Repos/CPPEngine/Rewrite/src/Assets/JsonFiles/Structures";
 
 
    for (const auto& entry : std::filesystem::directory_iterator(folderPath)){

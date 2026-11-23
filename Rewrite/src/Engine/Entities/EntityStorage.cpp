@@ -4,7 +4,7 @@ std::unordered_map<std::string, Entity> EntityStorage::entities;
 EntityStorage::EntityStorage(){}
 
 void EntityStorage::Load(){
-    std::string folderPath = "/Users/hayyan/Desktop/Repos/CPPEngine/Rewrite/src/Assets/Entities";
+    std::string folderPath = "/Users/hayyan/Desktop/Repos/CPPEngine/Rewrite/src/Assets/JsonFiles/Entities";
     
     for (const auto& entry : std::filesystem::directory_iterator(folderPath)){
         std::ifstream file(entry.path());
@@ -66,7 +66,9 @@ void EntityStorage::GeometryPass(){
     for(auto& [name, entity] : entities){
         if(entity.GetPackage<ModelController>() != nullptr){
             for(auto& [name, node] : *entity.GetPackage<ModelController>()->model->GetNodes()){
-                Renderer::GeometryPassEntity(node.mesh, entity.GetPackage<Transform>());
+                if(node.mesh.GetTexture() == nullptr)
+                    continue;
+                Renderer::GeometryPassEntity(node.mesh, entity.GetPackage<Transform>(), node.mesh.GetTexture());
             }
         }
     }
@@ -76,7 +78,9 @@ void EntityStorage::ForwardPass(){
     for(auto& [name, entity] : entities){
         if(entity.GetPackage<ModelController>() != nullptr){
             for(auto& [name, node] : *entity.GetPackage<ModelController>()->model->GetNodes()){
-                Renderer::ForwardPassEntity(node.mesh, entity.GetPackage<Transform>());
+                if(node.mesh.GetTexture() == nullptr)
+                    continue;
+                Renderer::ForwardPassEntity(node.mesh, entity.GetPackage<Transform>(), node.mesh.GetTexture());
             }
         }
     }

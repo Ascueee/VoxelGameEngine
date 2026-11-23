@@ -5,14 +5,13 @@
 #include <filesystem>
 #include <Script.hpp>
 #include <unordered_map>
-#include <Entity.hpp>
 #include <Transform.hpp>
 #include <CameraController.hpp>
 #include <EntityStorage.hpp>
 #include <InputManager.hpp>
-#include <Mesh.hpp>
 #include <ModelController.hpp>
 #include <ModelStorage.hpp>
+#include <TextureStorage.hpp>
 #include <glm/glm.hpp>
 
 class ScriptStorage{

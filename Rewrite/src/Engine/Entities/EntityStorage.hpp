@@ -10,6 +10,7 @@
 #include <ModelController.hpp>
 #include <ScriptController.hpp>
 
+
 //This class will keep all the entities in the engine
 //the lua script will be able to access this class to retrieve specific entities
 class EntityStorage{

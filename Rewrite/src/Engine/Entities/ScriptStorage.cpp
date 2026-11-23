@@ -13,9 +13,9 @@ void ScriptStorage::Load(){
         sol::constructors<Entity()>(),
         "GetName",[](Entity& e){return e.GetName();},
         "AddTransform",[](Entity& e){e.AddPackage<Transform>();},
-        "AddMeshController",[](Entity& e){e.AddPackage<ModelController>();},
+        "AddModelController",[](Entity& e){e.AddPackage<ModelController>();},
         "transform", sol::property([](Entity& e){ return e.GetPackage<Transform>();}),
-        "meshController", sol::property([](Entity& e){ return e.GetPackage<ModelController>();}),
+        "modelController", sol::property([](Entity& e){ return e.GetPackage<ModelController>();}),
         "camera", sol::property([](Entity& e){ return e.GetPackage<CameraController>();})
     );
 
@@ -42,11 +42,6 @@ void ScriptStorage::Load(){
         }
     );
 
-    luaReader.new_usertype<ModelStorage>(
-        "ModelStorage",
-        sol::constructors<ModelStorage()>(),
-        "GetModel",[](ModelStorage& model, std::string name)-> Model* {return model.GetModel(name);}
-    );
 
     luaReader.new_usertype<glm::vec3>(
         "Vector3",
@@ -67,25 +62,44 @@ void ScriptStorage::Load(){
         sol::meta_function::addition, [](const glm::quat& a, const glm::quat& b) -> glm::quat {return a + b;}
     );
 
+    luaReader.new_usertype<ModelStorage>(
+        "ModelStorage",
+        sol::constructors<ModelStorage()>(),
+        "GetModel",[](ModelStorage& model, std::string name)-> Model* {return model.GetModel(name);}
+    );
+
+    luaReader.new_usertype<TextureStorage>(
+        "TextureStorage",
+        sol::constructors<TextureStorage()>(),
+        "GetTexture", [](TextureStorage& texture, std::string name)-> Texture* { return texture.GetTexture(name);}
+    );
+
     luaReader.new_usertype<Model>(
         "Model",
         sol::constructors<Model()>(),
         "AddMesh", &Model::AddMesh,
-        "GetMesh", &Model::GetMesh
+        "GetMesh", [](Model& model, std::string name) -> Mesh* {return model.GetMesh(name);}
+    );
+
+    luaReader.new_usertype<Mesh>(
+        "Mesh",
+        sol::constructors<Mesh()>(),
+        "texture", sol::property([](Mesh& mesh) -> Texture* {return mesh.GetTexture();},
+         [](Mesh& mesh, Texture* texture) {mesh.SetTexture(texture);})
     );
 
     luaReader.new_usertype<Transform>(
         "Transform",
         sol::constructors<Transform()>(),
-        "position", sol::property([](Transform* t){ return t->position; }, [](Transform* t, const glm::vec3& v){ t->position = v; }),
-        "rotation", sol::property([](Transform* t){ return t->rotation;}, [](Transform* t, const glm::quat& v){ t->rotation = v; }),
-        "scale", sol::property([](Transform* t){ return t->scale; }, [](Transform* t, const glm::vec3& v){ t->scale = v; })
+        "position", sol::property([](Transform& t){ return t.position; }, [](Transform& t, const glm::vec3& v){ t.position = v; }),
+        "rotation", sol::property([](Transform& t){ return t.rotation;}, [](Transform& t, const glm::quat& v){ t.rotation = v; }),
+        "scale", sol::property([](Transform& t){ return t.scale; }, [](Transform& t, const glm::vec3& v){ t.scale = v; })
     );
-
+    
     luaReader.new_usertype<ModelController>(
         "ModelController",
         sol::constructors<ModelController()>(),
-        "model", sol::property([](ModelController& controller) -> Model* { return controller.model;}, [](ModelController& controller, Model* model) {controller.model = model;})
+        "model", sol::property([](ModelController& controller)-> Model* { return controller.model;}, [](ModelController& controller, Model* model) {controller.model = model;})
     );
 
     luaReader.new_usertype<CameraController>(
@@ -93,6 +107,7 @@ void ScriptStorage::Load(){
         sol::constructors<CameraController()>(),
         "position", sol::property([](CameraController* cam){ return cam->position; }, [](CameraController* cam, const glm::vec3& v){ cam->position = v; })
     );
+
 
     std::string folderPath = "/Users/hayyan/Desktop/Repos/CPPEngine/Rewrite/src/Assets/Scripts";
     for (const auto& entry : std::filesystem::directory_iterator(folderPath)){
