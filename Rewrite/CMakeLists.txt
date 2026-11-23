@@ -76,11 +76,13 @@ add_executable(A_Pirates_Tale
     src/Engine/EngineBlocks/AABB.cpp
     src/Engine/EngineBlocks/DebugRenderer.cpp
     src/Engine/EngineBlocks/TextureAtlasStorage.cpp
+    src/Engine/EngineBlocks/TextureStorage.cpp
     src/Engine/EngineBlocks/Shader.cpp
+    src/Engine/EngineBlocks/Texture.cpp
     src/Engine/EngineBlocks/TextureAtlas.cpp
+    src/Engine/EngineBlocks/Material.cpp
     src/Engine/EngineBlocks/ModelStorage.cpp
     
-
     src/Engine/WorldGeneration/Chunk.cpp
     src/Engine/WorldGeneration/WorldGenerator.cpp
     src/Engine/WorldGeneration/BiomeStorage.cpp
@@ -95,8 +97,7 @@ add_executable(A_Pirates_Tale
     src/Engine/WorldGeneration/TreeStructure.cpp
 
     src/Engine/EngineBlocks/Packages/CameraController.cpp
-
-
+    
 )
 
 target_include_directories(A_Pirates_Tale PRIVATE

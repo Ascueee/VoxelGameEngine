@@ -8,6 +8,7 @@
 #include <vector>
 #include <queue>
 #include <Transform.hpp>
+#include <Material.hpp>
 
 struct GBuffer{
     unsigned int handle;
@@ -62,8 +63,8 @@ class Renderer{
         static void DeferredPass(float screenWidth, float screenHeight);
         static void GeometryPassChunk(Mesh& mesh, glm::vec3 position);
         static void ForwardPassChunk(Mesh& mesh, glm::vec3 position);
-        static void GeometryPassEntity(Mesh& mesh, Transform* transform);
-        static void ForwardPassEntity(Mesh& mesh, Transform* transform);
+        static void GeometryPassEntity(Mesh& mesh, Transform* transform, Texture* texture);
+        static void ForwardPassEntity(Mesh& mesh, Transform* transform, Texture* texture);
         static void InitializeIds();
         static void Delete(Mesh& mesh);
     private:

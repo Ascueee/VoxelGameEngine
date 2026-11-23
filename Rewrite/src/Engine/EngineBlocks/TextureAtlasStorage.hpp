@@ -2,7 +2,6 @@
 #include <iostream>
 #include <fstream>
 #include <filesystem>
-#include <nlohmann/json.hpp>
 #include <glad/glad.h>
 #include <TextureAtlas.hpp>
 

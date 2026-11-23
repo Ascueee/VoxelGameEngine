@@ -6,6 +6,7 @@
 #include <WorldGenerator.hpp>
 #include <BiomeStorage.hpp>
 #include <TextureAtlasStorage.hpp>
+#include <TextureStorage.hpp>
 #include <BlockStorage.hpp>
 #include <BlockModelStorage.hpp>
 #include <ModelStorage.hpp>
@@ -82,13 +83,15 @@ int main()
     //DebugRenderer::Load(&camera);
     
     TextureAtlasStorage::Load();
+    TextureStorage::Load();
+    ModelStorage::Load();
+    ScriptStorage::Load();
+    EntityStorage::Load();
+
     BlockStorage::Load();
     BiomeStorage::Load();
     BlockModelStorage::Load();
-    ModelStorage::Load();
     StructureStorage::Load();
-    ScriptStorage::Load();
-    EntityStorage::Load();
 
     //World Generator Loads
     TreeBuilder::Load();

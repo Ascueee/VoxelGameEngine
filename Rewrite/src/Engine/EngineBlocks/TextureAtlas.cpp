@@ -1,10 +1,9 @@
 #include <TextureAtlas.hpp>
 
-TextureAtlas::TextureAtlas(std::string name, glm::ivec2 textureResolution, int textureSize){
-    this->name = name;
+
+TextureAtlas::TextureAtlas(glm::ivec2 textureResolution, int textureSize) : Texture(){
     this->textureResolution = textureResolution;
     this->textureSize = textureSize;
-
 }
 
 //The textureIndex represents what texture it is in the atlas
@@ -24,6 +23,3 @@ glm::vec4 TextureAtlas::GetUV(int textureID){
     return glm::vec4(u,v,u1, v1);
 }
 
-unsigned int& TextureAtlas::GetHandle(){
-    return handle;
-}

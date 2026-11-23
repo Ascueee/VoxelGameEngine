@@ -420,6 +420,7 @@ void Chunk::BuildChunkMesh(glm::vec3 pos){
 void Chunk::BuildMesh(Mesh& mesh, BlockMesh* blockMesh, int block, glm::vec3 blockPos, BlockFace blockFace){
     std::vector<float> vertices = blockMesh->GetVertices();
     std::vector<unsigned int> faceIndices = blockMesh->GetFaceIndices(blockFace);
+    mesh.SetTexture(TextureAtlasStorage::GetTexture("BaseAtlas"));
     //loop through each face and build the model
     glm::vec4 textureUVs = 
     TextureAtlasStorage::GetTexture("BaseAtlas")->GetUV(BlockStorage::GetBlock(block)->GetTextureId(blockFace));
@@ -436,6 +437,9 @@ void Chunk::BuildMesh(Mesh& mesh, BlockMesh* blockMesh, int block, glm::vec3 blo
 
         mesh.GetVertices().push_back(glm::mix(textureUVs.x, textureUVs.z, uvX)); 
         mesh.GetVertices().push_back(glm::mix(textureUVs.y, textureUVs.w, uvY));
+        // mesh.GetVertices().push_back(vertices[faceIndices[faceIndex] * 8 + 3]);
+        // mesh.GetVertices().push_back(vertices[faceIndices[faceIndex] * 8 + 4]);
+        
 
         mesh.GetVertices().push_back(vertices[faceIndices[faceIndex] * 8 + 5]);
         mesh.GetVertices().push_back(vertices[faceIndices[faceIndex] * 8 + 6]);

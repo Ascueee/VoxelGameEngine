@@ -29,6 +29,7 @@ uniform PointLight pointLights[NR_POINT_LIGHTS];
 
 uniform vec3 viewPos;
 
+
 in vec2 uv;
 out vec4 FragColor;
 
@@ -47,7 +48,7 @@ void main(){
         result += CalcPointLight(pointLights[i], normal, fragPos, viewDir, diffuse);  
 
     FragColor = vec4(result, 1.0);
-    //FragColor = vec4(CalcPointLight(pointLights[0], normal, fragPos, viewDir, diffuse), 1.0);
+
     //FragColor = vec4(normal * 0.5 + 0.5, 1.0);
 }
 

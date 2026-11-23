@@ -142,7 +142,7 @@ void Renderer::GeometryPassChunk(Mesh& mesh, glm::vec3 position){
     glDrawElements(GL_TRIANGLES, mesh.GetIndices().size(), GL_UNSIGNED_INT, 0);
 }
 
-void Renderer::GeometryPassEntity(Mesh& mesh, Transform* transform){
+void Renderer::GeometryPassEntity(Mesh& mesh, Transform* transform, Texture* texture){
     glBindVertexArray(mesh.GetVAO());
     geometryPass.Use();
 
@@ -152,15 +152,15 @@ void Renderer::GeometryPassEntity(Mesh& mesh, Transform* transform){
     model = glm::rotate(model, transform->rotation.y, glm::vec3(0, 0, 1));
     model = glm::rotate(model, transform->rotation.z, glm::vec3(1, 0, 0));
     model = glm::scale(model, transform->scale);
-
-    //set texture
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, TextureAtlasStorage::GetTexture("BaseAtlas")->GetHandle());
-    geometryPass.setInt("diffuse", 0);
-
+    
     geometryPass.setMat4("view", camera->GetView());
     geometryPass.setMat4("projection", camera->GetProjection());
     geometryPass.setMat4("model", model);
+
+    //set texture
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture->GetHandle());
+    geometryPass.setInt("diffuse", 0);
 
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glDrawElements(GL_TRIANGLES, mesh.GetIndices().size(), GL_UNSIGNED_INT, 0);
@@ -201,8 +201,8 @@ void Renderer::DeferredPass(float screenWidth, float screenHeight){
 
     renderPass.setVec3("pointLights[0].position", camera->position);
     renderPass.setVec3("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
-    renderPass.setVec3("pointLights[0].diffuse", 1.0f, 1.0f, 1.0f);
-    renderPass.setVec3("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
+    renderPass.setVec3("pointLights[0].diffuse", 0.01f, 0.01f, 0.01f);
+    renderPass.setVec3("pointLights[0].specular", 0.5f, 0.5f, 0.5f);
     renderPass.setFloat("pointLights[0].constant", 1.0f);
     renderPass.setFloat("pointLights[0].linear", 0.0f);
     renderPass.setFloat("pointLights[0].quadratic", 0.0f);
@@ -244,7 +244,7 @@ void Renderer::ForwardPassChunk(Mesh& mesh, glm::vec3 position){
     glDisable(GL_BLEND);
 }
 
-void Renderer::ForwardPassEntity(Mesh& mesh, Transform* transform){
+void Renderer::ForwardPassEntity(Mesh& mesh, Transform* transform, Texture* texture){
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBindVertexArray(mesh.GetVAO());
@@ -258,13 +258,13 @@ void Renderer::ForwardPassEntity(Mesh& mesh, Transform* transform){
     model = glm::rotate(model, transform->rotation.z, glm::vec3(1, 0, 0));
     model = glm::scale(model, transform->scale);
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, TextureAtlasStorage::GetTexture("BaseAtlas")->GetHandle());
-    forwardPass.setInt("diffuse", 0);
-
     forwardPass.setMat4("view", camera->GetView());
     forwardPass.setMat4("projection", camera->GetProjection());
     forwardPass.setMat4("model", model);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture->GetHandle());
+    forwardPass.setInt("diffuse", 0);
 
     glDrawElements(GL_TRIANGLES, mesh.GetIndices().size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);

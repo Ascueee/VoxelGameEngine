@@ -4,7 +4,7 @@ std::unordered_map<ushort, Block> BlockStorage::blocks;
 BlockStorage::BlockStorage() {}
 
 void BlockStorage::Load(){
-    std::string folderPath = "/Users/hayyan/Desktop/Repos/CPPEngine/Rewrite/src/Assets/Blocks";
+    std::string folderPath = "/Users/hayyan/Desktop/Repos/CPPEngine/Rewrite/src/Assets/JsonFiles/Blocks";
 
    for (const auto& entry : std::filesystem::directory_iterator(folderPath)){
         std::ifstream file(entry.path());
